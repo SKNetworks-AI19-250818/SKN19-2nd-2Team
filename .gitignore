@@ -1,5 +1,5 @@
 # Data
-data/*.csv
+# data/*.csv # lfs로 관리시 충돌남으로 빼줌을 권장하여 제외시킴
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
