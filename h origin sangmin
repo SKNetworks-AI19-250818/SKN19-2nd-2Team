@@ -1,0 +1,51 @@
+[1mdiff --git a/notebooks/colaa222/feature_cleanup_sangmin.py b/notebooks/colaa222/feature_cleanup_sangmin.py[m
+[1mindex e69de29..98c898f 100644[m
+[1m--- a/notebooks/colaa222/feature_cleanup_sangmin.py[m
+[1m+++ b/notebooks/colaa222/feature_cleanup_sangmin.py[m
+[36m@@ -0,0 +1,46 @@[m
+[32m+[m[32m"""[m
+[32m+[m[32m설명: 식생활 + 비만 및 체중조절 + 구강건강 카테고리에서[m
+[32m+[m[32m      중요도 상위 13개 변수만 남기고 결측치 처리 (결측률 40% 이상 컬럼 자동 삭제)[m
+[32m+[m[32m"""[m
+[32m+[m
+[32m+[m[32mimport pandas as pd[m
+[32m+[m[32mimport numpy as np[m
+[32m+[m
+[32m+[m[32m# 1. 데이터 불러오기[m
+[32m+[m[32mdata = pd.read_csv("../../data/analy_data.csv")[m
+[32m+[m
+[32m+[m[32m# 2. 유지할 컬럼[m
+[32m+[m[32mkeep_cols = [[m
+[32m+[m[32m    "nua_01z2", "nuc_02z1", "nuc_03z1", "ore_03z2", "ord_05z1", "ord_01d2",[m
+[32m+[m[32m    "ord_01f3", "obb_02a1", "obb_02b1", "obb_02d1", "ora_01z1", "orb_01z1"[m
+[32m+[m[32m][m
+[32m+[m
+[32m+[m[32mtarget_col = "churn"[m
+[32m+[m[32mif target_col in data.columns:[m
+[32m+[m[32m    keep_cols = [target_col] + keep_cols[m
+[32m+[m
+[32m+[m[32mdata = data.loc[:, [c for c in keep_cols if c in data.columns]][m
+[32m+[m
+[32m+[m[32m# 3. 결측률 40% 초과 컬럼 제거[m
+[32m+[m[32mmissing_rate = data.isna().mean()[m
+[32m+[m[32mdrop_cols = missing_rate[missing_rate > 0.4].index.tolist()[m
+[32m+[m[32mif drop_cols:[m
+[32m+[m[32m    print("결측률 40% 초과 컬럼:", drop_cols)[m
+[32m+[m[32m    data.drop(columns=drop_cols, inplace=True)[m
+[32m+[m
+[32m+[m[32m# 4. 결측치 처리 (수치형→중앙값, 범주형→최빈값)[m
+[32m+[m[32mnum_cols = data.select_dtypes(include=[np.number]).columns[m
+[32m+[m[32mcat_cols = data.select_dtypes(exclude=[np.number]).columns[m
+[32m+[m
+[32m+[m[32mfor col in num_cols:[m
+[32m+[m[32m    if data[col].isnull().any():[m
+[32m+[m[32m        data[col].fillna(data[col].median(), inplace=True)[m
+[32m+[m
+[32m+[m[32mfor col in cat_cols:[m
+[32m+[m[32m    if data[col].isnull().any():[m
+[32m+[m[32m        mode_val = data[col].mode()[m
+[32m+[m[32m        data[col].fillna(mode_val.iloc[0] if len(mode_val) else "미상", inplace=True)[m
+[32m+[m
+[32m+[m[32m# 5. 결과 저장[m
+[32m+[m[32mdata.to_csv("../../data/analy_data_clean.csv", index=False, encoding="utf-8-sig")[m
+[32m+[m[32mprint("✅ 정제 완료. 저장 위치: ../../data/analy_data_clean.csv")[m
