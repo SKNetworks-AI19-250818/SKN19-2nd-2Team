@@ -10,7 +10,26 @@
 vfxpedia/
 ├── README.md                                      # 이 파일
 │
+├── data/                                          # 📁 개인 데이터 (팀 공통 제외)
+│   ├── variable.csv                               # 변수 코드 매핑
+│   └── data_explain.csv                           # 변수 설명
+│
+├── eda/                                           # 📊 탐색적 데이터 분석
+│   ├── README.md                                  # EDA 가이드
+│   ├── 01_data_overview.ipynb                     # 전체 데이터 파악
+│   ├── 02_decoder_test.ipynb                      # VariableDecoder 테스트
+│   ├── 03_diagnosis_data_quality.ipynb            # 데이터 품질 진단
+│   ├── 04_data_cleaning_strategy.ipynb            # 정제 전략 수립
+│   ├── 05_data_cleaning_final.ipynb               # 최종 데이터 정제
+│   ├── 06_education_smoking_analysis.ipynb        # 교육-금연 분석
+│   ├── 07_economic_activity_analysis.ipynb        # 경제활동-금연 분석
+│   └── 08_analysis_education_economy.ipynb        # 교육/경제 종합 분석
+│
+├── model/                                         # 🤖 머신러닝 모델링
+│   └── README.md                                  # 모델링 가이드 (예정)
+│
 ├── utils/                                         # 🔧 유틸리티 모듈
+│   ├── variable_decoder.py                        # ⭐ 변수 디코딩 유틸
 │   └── data_cleaning.py                           # 데이터 정제 + Feature Engineering
 │       ├── clean_data_for_analysis()              # 데이터 정제 메인 함수
 │       ├── add_economic_status_features()         # 경제활동 상태 Feature 생성
@@ -23,44 +42,51 @@ vfxpedia/
 │   ├── PDF_VERIFICATION_NEEDED.md                 # PDF 확인 필요 변수
 │   └── CHS_Variable.pdf                           # 원본 변수 설명 PDF
 │
-├── output/                                        # 📊 분석 결과
-│   ├── analy_data_cleaned.csv                     # 정제된 데이터
-│   └── analysis_results_education_economy_20251007.csv
+├── examples/                                      # 📝 예제 코드
+│   └── decoder_usage.py                           # VariableDecoder 사용 예제
 │
-└── 📓 노트북 파일들 (작업 순서대로)
-    ├── 01_data_overview.ipynb                     # 전체 데이터 파악
-    ├── 02_diagnosis_data_quality.ipynb            # 데이터 품질 진단
-    ├── 03_data_cleaning_strategy.ipynb            # 정제 전략 수립
-    ├── 04_data_cleaning_final.ipynb               # 최종 데이터 정제
-    └── 05_analysis_education_economy.ipynb        # 교육/경제 분석
+└── output/                                        # 📊 분석 결과
+    ├── analy_data_cleaned.csv                     # 정제된 데이터
+    └── analysis_results_education_economy_20251007.csv
+
+📌 팀 공통 데이터 (프로젝트 루트):
+../../data/
+├── analy_data.csv                                 # 분석용 데이터 (팀 공통)
+└── raw_data.csv                                   # 원본 데이터 (팀 공통)
 ```
 
 ---
 
 ## 🚀 작업 순서 (Workflow)
 
-### 1단계: 전체 데이터 파악
-**📓 `01_data_overview.ipynb`**
+### 📊 EDA 단계 (`eda/` 폴더)
+
+#### 1단계: 전체 데이터 파악
+**📓 `eda/01_data_overview.ipynb`**
 - 데이터 기본 정보 확인 (shape, 컬럼, 데이터 타입)
 - 기술 통계량 파악
 - 전체 데이터셋 이해
 
-### 2단계: 데이터 품질 진단
-**📓 `02_diagnosis_data_quality.ipynb`**
+**📓 `eda/02_decoder_test.ipynb`**
+- VariableDecoder 기능 검증
+- 변수 디코딩 테스트
+
+#### 2단계: 데이터 품질 진단
+**📓 `eda/03_diagnosis_data_quality.ipynb`**
 - 변수별 실제 코드값 확인
 - 특수코드 분포 파악 (응답거부, 모름, 비해당)
 - 정의되지 않은 코드 탐지
 - 분석 가능 표본 확인
 
-### 3단계: 정제 전략 수립
-**📓 `03_data_cleaning_strategy.ipynb`**
+#### 3단계: 정제 전략 수립
+**📓 `eda/04_data_cleaning_strategy.ipynb`**
 - 특수코드 처리 전략 수립
 - 응답거부/모름 제거 방침 결정
 - 비경제활동인구(88) 유지 결정 ⭐
 - Skip Logic 처리 방안 수립
 
-### 4단계: 최종 데이터 정제
-**📓 `04_data_cleaning_final.ipynb`**
+#### 4단계: 최종 데이터 정제
+**📓 `eda/05_data_cleaning_final.ipynb`**
 - `utils/data_cleaning.py` 모듈 사용
 - 특수코드 체계적 처리
 - 결측값 제거
@@ -71,21 +97,42 @@ vfxpedia/
 from utils.data_cleaning import clean_data_for_analysis, add_economic_status_features
 
 # 데이터 정제
-df_clean, report = clean_data_for_analysis('../../data/analy_data.csv')
+df_clean, report = clean_data_for_analysis('../../../data/analy_data.csv')
 
 # Feature 생성
 df_clean = add_economic_status_features(df_clean)
 ```
 
-### 5단계: 교육/경제 분석
-**📓 `05_analysis_education_economy.ipynb`**
+#### 5단계: 심층 분석
+**📓 `eda/06_education_smoking_analysis.ipynb`**
 - 교육수준에 따른 금연 성공률 분석
+- 통계적 검정 및 시각화
+
+**📓 `eda/07_economic_activity_analysis.ipynb`**
 - 경제활동 상태에 따른 금연 성공률 분석
-- 직업분류별 금연 성공률 분석
-- 종사상 지위별 금연 성공률 분석
-- 혼인상태별 금연 성공률 분석
+- 직업분류별 분석
+
+**📓 `eda/08_analysis_education_economy.ipynb`**
+- 교육/경제 종합 분석
+- 교차 분석 및 상관관계
 - 가설 검증 (Chi-square test 등)
 - 시각화 및 결과 해석
+
+### 🤖 모델링 단계 (`model/` 폴더) - 예정
+
+#### 6단계: 베이스라인 모델 구축
+- Logistic Regression, Decision Tree, Random Forest
+- 기본 성능 평가
+
+#### 7단계: 모델 최적화
+- 하이퍼파라미터 튜닝
+- Feature Engineering
+- 교차 검증
+
+#### 8단계: 최종 평가 및 해석
+- Feature Importance 분석
+- 모델 해석 (SHAP)
+- 비즈니스 인사이트 도출
 
 ---
 
