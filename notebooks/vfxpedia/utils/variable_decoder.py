@@ -33,12 +33,12 @@ class VariableDecoder:
         """
         Args:
             csv_path (str, optional): variable.csv 경로. 
-                                      기본값은 'vfxpedia/data/variable.csv'
+                                      기본값은 'data/variable.csv'
         """
         if csv_path is None:
-            # vfxpedia/utils/variable_decoder.py 기준으로 ../data/variable.csv
-            current_file = Path(__file__)
-            csv_path = current_file.parent.parent / 'data' / 'variable.csv'
+            # 프로젝트 루트 기준 경로
+            project_root = Path(__file__).parent.parent
+            csv_path = project_root / 'data' / 'variable.csv'
         
         self.csv_path = csv_path
         self.df_variables = None
