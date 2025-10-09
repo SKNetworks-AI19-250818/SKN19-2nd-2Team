@@ -1,3 +1,10 @@
+## 프로젝트 폴더
+- data : 데이터 저장소
+- notebooks : EDA · ML 실험 공간 + 팀리뷰
+- smoke_churn_model : (확정) 모델 패키지 코드
+
+<br>
+
 ## 데이터 받는 방법 (Git LFS 설치 필수)
 
 - 우리 프로젝트의 데이터(.csv 등 대용량 파일)는 Git LFS (Large File Storage) 로 관리됩니다.
