@@ -8,15 +8,21 @@ from .variable_decoder import (
     decode_value,
     decode_column,
     print_var_info,
-    get_decoder
+    get_decoder,
+    get_korean_label,
+    get_korean_labels,
+    create_korean_labels_dict
 )
 
-__version__ = '2.0.0'
+__version__ = '2.1.0'
 
 __all__ = [
     'VariableDecoder',
     'decode_value',
     'decode_column', 
     'print_var_info',
-    'get_decoder'
+    'get_decoder',
+    'get_korean_label',
+    'get_korean_labels',
+    'create_korean_labels_dict'
 ]

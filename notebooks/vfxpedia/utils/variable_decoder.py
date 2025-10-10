@@ -29,24 +29,34 @@ class VariableDecoder:
         >>> df.head()
     """
     
-    def __init__(self, csv_path=None):
+    def __init__(self, csv_path=None, fallback_csv_path=None):
         """
         Args:
             csv_path (str, optional): variable.csv 경로. 
                                       기본값은 'data/variable.csv'
+            fallback_csv_path (str, optional): variable_full.csv 경로.
+                                               기본값은 'data/variable_full.csv'
         """
         if csv_path is None:
             # 프로젝트 루트 기준 경로
             project_root = Path(__file__).parent.parent
             csv_path = project_root / 'data' / 'variable.csv'
+            
+        if fallback_csv_path is None:
+            project_root = Path(__file__).parent.parent
+            fallback_csv_path = project_root / 'data' / 'variable_full.csv'
         
         self.csv_path = csv_path
+        self.fallback_csv_path = fallback_csv_path
         self.df_variables = None
+        self.df_fallback = None  # variable_full.csv용
         self._cache = {}  # 성능 향상을 위한 캐시
+        self._fallback_cache = {}  # fallback용 캐시
         self._load_variables()
     
     def _load_variables(self):
-        """variable.csv 파일 로드"""
+        """variable.csv 및 variable_full.csv 파일 로드"""
+        # 1. 메인 variable.csv 로드
         try:
             self.df_variables = pd.read_csv(self.csv_path, encoding='utf-8-sig')
             
@@ -68,9 +78,24 @@ class VariableDecoder:
         except Exception as e:
             print(f"❌ variable.csv 로드 실패: {e}")
             self.df_variables = pd.DataFrame()
+        
+        # 2. Fallback variable_full.csv 로드 (선택적)
+        try:
+            self.df_fallback = pd.read_csv(self.fallback_csv_path, encoding='utf-8-sig')
+            print(f"✅ variable_full.csv 로드 완료: {len(self.df_fallback)} 개 매핑 (fallback)")
+            
+            # fallback 캐시 초기화
+            self._build_fallback_cache()
+            
+        except FileNotFoundError:
+            print(f"ℹ️  variable_full.csv 없음 (fallback 미사용): {self.fallback_csv_path}")
+            self.df_fallback = pd.DataFrame()
+        except Exception as e:
+            print(f"⚠️  variable_full.csv 로드 실패 (fallback 미사용): {e}")
+            self.df_fallback = pd.DataFrame()
     
     def _build_cache(self):
-        """성능 향상을 위한 캐시 구축"""
+        """성능 향상을 위한 캐시 구축 (variable.csv)"""
         if self.df_variables.empty:
             return
         
@@ -95,9 +120,35 @@ class VariableDecoder:
             except:
                 pass
     
+    def _build_fallback_cache(self):
+        """fallback 캐시 구축 (variable_full.csv)"""
+        if self.df_fallback.empty:
+            return
+        
+        for _, row in self.df_fallback.iterrows():
+            var_name = row['variable']
+            code = row['code']
+            meaning = row['meaning']
+            
+            # 변수별 딕셔너리 생성
+            if var_name not in self._fallback_cache:
+                self._fallback_cache[var_name] = {
+                    'label': row.get('label', var_name),
+                    'category': row.get('category', 'Unknown'),
+                    'mappings': {}
+                }
+            
+            # 코드 변환
+            try:
+                if pd.notna(code):
+                    code_key = float(code) if str(code).replace('.', '').isdigit() else str(code)
+                    self._fallback_cache[var_name]['mappings'][code_key] = meaning
+            except:
+                pass
+    
     def decode_value(self, var_name, code, return_code_if_not_found=True):
         """
-        단일 값을 의미로 디코딩
+        단일 값을 의미로 디코딩 (variable.csv → variable_full.csv fallback)
         
         Args:
             var_name (str): 변수명 (예: 'sob_01z1')
@@ -114,22 +165,28 @@ class VariableDecoder:
             >>> decoder.decode_value('sob_01z1', 7)
             '4년제대학'
         """
-        if self.df_variables.empty:
+        if self.df_variables.empty and self.df_fallback.empty:
             return str(code) if return_code_if_not_found else None
         
         # NA 처리
         if pd.isna(code):
             return 'Missing' if return_code_if_not_found else None
         
-        # 캐시에서 찾기
+        # 코드 타입 변환 시도
+        search_keys = [code]
+        if isinstance(code, (int, float)):
+            search_keys.extend([float(code), int(code), str(int(code))])
+        
+        # 1. 메인 캐시에서 찾기
         if var_name in self._cache:
             mappings = self._cache[var_name]['mappings']
-            
-            # 코드 타입 변환 시도
-            search_keys = [code]
-            if isinstance(code, (int, float)):
-                search_keys.extend([float(code), int(code), str(int(code))])
-            
+            for key in search_keys:
+                if key in mappings:
+                    return mappings[key]
+        
+        # 2. Fallback 캐시에서 찾기
+        if var_name in self._fallback_cache:
+            mappings = self._fallback_cache[var_name]['mappings']
             for key in search_keys:
                 if key in mappings:
                     return mappings[key]
@@ -193,7 +250,7 @@ class VariableDecoder:
     
     def get_variable_label(self, var_name):
         """
-        변수의 한글 라벨 조회
+        변수의 한글 라벨 조회 (variable.csv → variable_full.csv fallback)
         
         Args:
             var_name (str): 변수명
@@ -205,13 +262,20 @@ class VariableDecoder:
             >>> decoder.get_variable_label('sob_01z1')
             '교육수준'
         """
+        # 1. 메인 캐시에서 찾기
         if var_name in self._cache:
             return self._cache[var_name]['label']
+        
+        # 2. Fallback 캐시에서 찾기
+        if var_name in self._fallback_cache:
+            return self._fallback_cache[var_name]['label']
+        
+        # 3. 둘 다 없으면 변수명 그대로 반환
         return var_name
     
     def get_variable_info(self, var_name):
         """
-        변수에 대한 메타정보 조회
+        변수에 대한 메타정보 조회 (variable.csv → variable_full.csv fallback)
         
         Args:
             var_name (str): 변수명
@@ -224,20 +288,34 @@ class VariableDecoder:
             >>> print(info['label'])
             '교육수준'
         """
-        if self.df_variables.empty or var_name not in self._cache:
-            return {}
+        # 1. 메인 캐시에서 찾기
+        if var_name in self._cache:
+            cache_info = self._cache[var_name]
+            return {
+                'variable': var_name,
+                'label': cache_info['label'],
+                'category': cache_info['category'],
+                'codes': [
+                    {'code': code, 'meaning': meaning}
+                    for code, meaning in cache_info['mappings'].items()
+                ]
+            }
         
-        cache_info = self._cache[var_name]
+        # 2. Fallback 캐시에서 찾기
+        if var_name in self._fallback_cache:
+            cache_info = self._fallback_cache[var_name]
+            return {
+                'variable': var_name,
+                'label': cache_info['label'],
+                'category': cache_info['category'],
+                'codes': [
+                    {'code': code, 'meaning': meaning}
+                    for code, meaning in cache_info['mappings'].items()
+                ],
+                'source': 'fallback'  # fallback에서 가져왔음을 표시
+            }
         
-        return {
-            'variable': var_name,
-            'label': cache_info['label'],
-            'category': cache_info['category'],
-            'codes': [
-                {'code': code, 'meaning': meaning}
-                for code, meaning in cache_info['mappings'].items()
-            ]
-        }
+        return {}
     
     def get_code_mapping(self, var_name):
         """
@@ -258,40 +336,64 @@ class VariableDecoder:
             return self._cache[var_name]['mappings'].copy()
         return {}
     
-    def get_all_variables(self, category=None):
+    def get_all_variables(self, category=None, include_fallback=True):
         """
         모든 변수 목록 또는 특정 카테고리의 변수 목록 반환
         
         Args:
             category (str, optional): 카테고리 필터
+            include_fallback (bool): fallback 데이터도 포함할지 여부
             
         Returns:
             list: 변수명 리스트
         """
-        if self.df_variables.empty:
-            return []
+        variables = []
         
-        variables = self.df_variables['variable'].unique().tolist()
+        # 1. 메인 데이터에서 가져오기
+        if not self.df_variables.empty:
+            if category:
+                filtered = self.df_variables[
+                    self.df_variables['category'] == category
+                ]['variable'].unique().tolist()
+                variables.extend(filtered)
+            else:
+                variables.extend(self.df_variables['variable'].unique().tolist())
         
-        if category:
-            filtered = self.df_variables[
-                self.df_variables['category'] == category
-            ]['variable'].unique().tolist()
-            return filtered
+        # 2. Fallback 데이터에서 추가로 가져오기
+        if include_fallback and not self.df_fallback.empty:
+            if category:
+                filtered = self.df_fallback[
+                    self.df_fallback['category'] == category
+                ]['variable'].unique().tolist()
+                variables.extend(filtered)
+            else:
+                variables.extend(self.df_fallback['variable'].unique().tolist())
         
-        return variables
+        # 중복 제거 후 반환
+        return list(set(variables))
     
-    def get_categories(self):
+    def get_categories(self, include_fallback=True):
         """
-        모든 카테고리 목록 반환
+        모든 카테고리 목록 반환 (variable.csv + variable_full.csv)
         
+        Args:
+            include_fallback (bool): fallback 데이터도 포함할지 여부
+            
         Returns:
             list: 카테고리 리스트
         """
-        if self.df_variables.empty or 'category' not in self.df_variables.columns:
-            return []
+        categories = []
         
-        return self.df_variables['category'].dropna().unique().tolist()
+        # 1. 메인 데이터에서 가져오기
+        if not self.df_variables.empty and 'category' in self.df_variables.columns:
+            categories.extend(self.df_variables['category'].dropna().unique().tolist())
+        
+        # 2. Fallback 데이터에서 추가로 가져오기
+        if include_fallback and not self.df_fallback.empty and 'category' in self.df_fallback.columns:
+            categories.extend(self.df_fallback['category'].dropna().unique().tolist())
+        
+        # 중복 제거 후 반환
+        return list(set(categories))
     
     def create_value_counts_decoded(self, df, col_name, dropna=True, normalize=False):
         """
@@ -396,6 +498,84 @@ def print_var_info(var_name):
     """
     decoder = get_decoder()
     decoder.print_variable_summary(var_name)
+
+
+def get_korean_label(var_name):
+    """
+    단일 변수의 한글 라벨을 반환
+    
+    Args:
+        var_name (str): 변수명
+        
+    Returns:
+        str: 한글 라벨
+    
+    Example:
+        >>> label = get_korean_label('sob_01z1')
+        >>> print(label)  # '교육수준'
+    """
+    decoder = get_decoder()
+    return decoder.get_variable_label(var_name)
+
+
+def get_korean_labels(variable_names, format_type='simple'):
+    """
+    변수명 리스트를 한글 라벨 리스트로 변환
+    
+    Args:
+        variable_names (list): 변수명 리스트
+        format_type (str): 출력 형식
+            - 'simple': 한글 라벨만 (예: '교육수준')
+            - 'with_var': 변수명 + 한글 (예: 'sob_01z1 (교육수준)')
+            - 'newline': 변수명과 한글을 줄바꿈 (예: 'sob_01z1\n(교육수준)')
+        
+    Returns:
+        list: 한글 라벨 리스트
+    
+    Example:
+        >>> labels = get_korean_labels(['age', 'sob_01z1'], format_type='simple')
+        >>> print(labels)  # ['만나이', '교육수준']
+    """
+    decoder = get_decoder()
+    labels = []
+    
+    for var in variable_names:
+        label = decoder.get_variable_label(var)
+        
+        if format_type == 'simple':
+            labels.append(label)
+        elif format_type == 'with_var':
+            if label == var:
+                labels.append(var)
+            else:
+                labels.append(f"{var} ({label})")
+        elif format_type == 'newline':
+            if label == var:
+                labels.append(var)
+            else:
+                labels.append(f"{var}\n({label})")
+        else:
+            labels.append(label)
+    
+    return labels
+
+
+def create_korean_labels_dict(variable_names):
+    """
+    변수명 리스트를 한글 라벨 딕셔너리로 변환
+    
+    Args:
+        variable_names (list): 변수명 리스트
+        
+    Returns:
+        dict: {변수명: 한글라벨} 딕셔너리
+    
+    Example:
+        >>> labels_dict = create_korean_labels_dict(['age', 'sob_01z1'])
+        >>> print(labels_dict)  # {'age': '만나이', 'sob_01z1': '교육수준'}
+    """
+    decoder = get_decoder()
+    return {var: decoder.get_variable_label(var) for var in variable_names}
 
 
 if __name__ == '__main__':

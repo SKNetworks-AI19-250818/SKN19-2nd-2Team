@@ -698,6 +698,24 @@ sob_02z1,졸업여부,4.0,재학휴학중,교육경제활동
 sob_02z1,졸업여부,7.0,응답거부,교육경제활동
 sob_02z1,졸업여부,8.0,비해당,교육경제활동
 sob_02z1,졸업여부,9.0,모름,교육경제활동
+sod_02z3,혼인상태,1.0,기혼,교육경제활동
+sod_02z3,혼인상태,2.0,기혼이지만 별거,교육경제활동
+sod_02z3,혼인상태,3.0,사별,교육경제활동
+sod_02z3,혼인상태,4.0,이혼,교육경제활동
+sod_02z3,혼인상태,5.0,미혼,교육경제활동
+sod_02z3,혼인상태,7.0,응답거부,교육경제활동
+sod_02z3,혼인상태,9.0,모름,교육경제활동
 spot_no,표본지점번호,,표본지점 번호,기본정보
 wt_h,가구가중치,,가구조사 가중치,기본정보
 wt_p,개인가중치,,개인조사 가중치(성/연령 보정),기본정보
+education_group,교육수준_그룹,0.0,저학력_저위험 (무학~초등),Feature Engineering
+education_group,교육수준_그룹,1.0,중학력_고위험 (중학~전문대),Feature Engineering
+education_group,교육수준_그룹,2.0,고학력_중위험 (4년제~대학원),Feature Engineering
+is_economically_active,경제활동_여부,0.0,비경제활동자,Feature Engineering
+is_economically_active,경제활동_여부,1.0,경제활동자,Feature Engineering
+job_risk_group,직업_위험도,-1.0,해당없음 (비경제활동자),Feature Engineering
+job_risk_group,직업_위험도,0.0,저위험_고성공 (농림어업/전문가/관리자),Feature Engineering
+job_risk_group,직업_위험도,1.0,중위험 (단순노무/사무/기계조작/판매),Feature Engineering
+job_risk_group,직업_위험도,2.0,고위험_저성공 (서비스/기능원/군인),Feature Engineering
+is_employee,임금근로자_여부,0.0,자영업/고용주/무급가족,Feature Engineering
+is_employee,임금근로자_여부,1.0,임금근로자,Feature Engineering
