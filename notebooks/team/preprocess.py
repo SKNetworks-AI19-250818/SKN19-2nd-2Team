@@ -15,7 +15,10 @@ DATA_PATH = DATA_DIR / "raw_data.csv"
 SAVE_FILE = DATA_DIR / "prep_data_v1.csv"
 JSON_FILE = ROOT_DIR / "notebooks" / "team" / "columns.json"
 
-with open(JSON_FILE, "r", encoding="utf-8") as f:
+# 개인 폴더 경로에 있는 columns.json 활용시
+MY_FILE = ROOT_DIR / "notebooks" / "sosodoit" / "modules" / "columns.json"
+
+with open(MY_FILE, "r", encoding="utf-8") as f:
     columns_dict = json.load(f)
 
 # ==================================================
@@ -255,15 +258,6 @@ from notebooks.team.features_ksh import feature_age_group, feature_is_single, fe
 from notebooks.team.features_mhs import feature_time_col
 from notebooks.team.features_ohj import feature_education_group, feature_is_economically_active, feature_occupation_type, feature_is_employee, feature_is_married, feature_marital_stability
 
-def drop_feature(df_merge):
-    
-    df_merge = df_merge.drop(['fma_13z1', 'fma_14z1','fma_27z1','fma_26z1','smb_01z1','smb_03z1','smb_06z1'], axis=1)
-    
-    """이곳에 모델 훈련과 관련 없는, 피처 생성 후 필요 없는 속성 제거 추가"""
-    # df_merge = df_merge.drop(['mtc_04z1', 'mtc_06z1', 'mtc_09z1', 'mtc_11z1'], axis=1)
-
-    return df_merge
-
 def featuring_data(df_merge):
     
     df_merge = feature_age_group(df_merge)
@@ -281,7 +275,13 @@ def featuring_data(df_merge):
     # df_merge = feature_is_married(df_merge)
     # df_merge = feature_marital_stability(df_merge)
 
-    # 마지막에 컬럼 삭제
-    df_merge = drop_feature(df_merge)
+    return df_merge
+
+def drop_feature(df_merge):
+    
+    df_merge = df_merge.drop(['fma_13z1', 'fma_14z1','fma_27z1','fma_26z1','smb_01z1','smb_03z1','smb_06z1'], axis=1)
+    
+    """이곳에 모델 훈련과 관련 없는, 피처 생성 후 필요 없는 속성 제거 추가"""
+    # df_merge = df_merge.drop(['mtc_04z1', 'mtc_06z1', 'mtc_09z1', 'mtc_11z1'], axis=1)
 
     return df_merge
