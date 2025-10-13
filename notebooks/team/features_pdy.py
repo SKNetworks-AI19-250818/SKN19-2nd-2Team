@@ -53,3 +53,19 @@ def feature_activity_score_and_weight(df_merge):
     df_merge["activity_score"] = df_merge["activity_score_weight"].apply(activity_level)
 
     return df_merge
+
+# 액상형 관련 처리
+# 액상형을 피워봤는데 churn이 1이라 애매한 row 모두 제거. 3,148건 제거됨
+def Liquid_method1(df_merge):
+    # 9 모름 -> 2 아니오로 처리
+    df_merge.loc[df_merge["sma_08z1"] == 9, 'sma_08z1'] = 2.0
+    df_merge = df_merge[~((df_merge['sma_08z1']==1) & (df_merge['churn']==1))]
+    return df_merge
+
+
+# 액상형 피워봤고, 최근 한 달 동안 피운 일수가 0을 초과하는데 churn이 1이면 0으로 변경
+def Liquid_method2(df_merge):
+    # 9 모름 -> 2 아니오로 처리
+    df_merge.loc[df_merge["sma_08z1"] == 9, 'sma_08z1'] = 2.0
+    df_merge.loc[(df_merge['sma_08z1'] == 1) & (df_merge['sma_11z2'] != 0) & (df_merge['churn'] == 1), 'churn'] = 0
+    return df_merge
