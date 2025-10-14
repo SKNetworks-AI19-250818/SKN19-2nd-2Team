@@ -22,6 +22,9 @@ def feature_time_col(df_merge):
         if minute_col in df_merge.columns and time_col in df_merge.columns:
             df_merge[time_col] = df_merge[time_col].fillna(0) + (df_merge[minute_col].fillna(0) / 60)
     
+    # '분' 컬럼은 삭제
+    df_merge = df_merge.drop(columns=[pair[1] for pair in time_minute_pairs if pair[1] in df_merge.columns])
+    
     return df_merge
 
 def feature_smoking_will(df_merge):
