@@ -27,8 +27,11 @@ init_state()
 st.title("상담자 전용")
 
 if not st.session_state.get("patient"):
-    st.warning("먼저 '환자 정보 입력' 페이지에서 정보를 저장하세요.")
-    st.button("환자 정보 입력으로 이동", on_click=go, args=(NAV_INPUT,))
+    st.warning("먼저 '고객 정보 입력' 페이지에서 정보를 저장하세요.")
+    st.button("고객 정보 입력으로 이동", on_click=lambda: st.session_state.update({"_goto_input": True}))
+    # 콜백 밖에서 실제 전환 수행
+    if st.session_state.pop("_goto_input", False):
+        st.switch_page("pages/01_고객_정보_입력.py")
     st.stop()
 
 patient = st.session_state["patient"]
@@ -36,9 +39,9 @@ name = patient["이름"]
 
 col1, col2 = st.columns([3, 1])
 with col1:
-    st.subheader(f"환자: {name}  |  방문일: {patient.get('날짜','-')}")
+    st.subheader(f"고객: {name}  |  방문일: {patient.get('날짜','-')}")
 with col2:
-    selected = st.selectbox("다른 환자 보기(데모)", ["(선택 안 함)"] + list(patient_data_all.keys()))
+    selected = st.selectbox("다른 고객 보기(데모)", ["(선택 안 함)"] + list(patient_data_all.keys()))
     if st.button("열기") and selected != "(선택 안 함)":
         p = patient_data_all[selected]
         st.session_state["patient"] = {"이름": selected, "날짜": patient.get("날짜",""), **p}
@@ -66,7 +69,7 @@ MUTED = "#64748B"
 st.markdown("---")
 st.title("금연 성공 예측 분석 리포트")
 
-# 환자/평균 매핑 (현재 보유 필드 기준)
+# 고객/평균 매핑 (현재 보유 필드 기준)
 patient_data = {
     "운동빈도": float(p["운동빈도"]),
     "수면시간": float(p["수면시간"]),
@@ -165,7 +168,7 @@ with col_b:
     fig_radar = go.Figure()
     fig_radar.add_trace(go.Scatterpolar(
         r=patient_scores, theta=categories, fill='toself',
-        name='현재 환자', line_color="#F97316"
+        name='현재 고객', line_color="#F97316"
     ))
     fig_radar.add_trace(go.Scatterpolar(
         r=success_scores, theta=categories, fill='toself',
@@ -184,7 +187,7 @@ col_c, col_d = st.columns(2)
 with col_c:
     df_cmp = pd.DataFrame({
         '지표': ['수면시간', '운동빈도', '스트레스(낮을수록 좋음)', '아침식사', '음주량(적을수록 좋음)'],
-        '환자': [
+        '고객': [
             patient_data['수면시간'],
             patient_data['운동빈도'],
             patient_data['스트레스'],
@@ -200,9 +203,9 @@ with col_c:
         ]
     })
     fig_cmp = px.bar(
-        df_cmp, x='지표', y=['환자', '성공자 평균'],
+        df_cmp, x='지표', y=['고객', '성공자 평균'],
         barmode='group',
-        color_discrete_map={'환자': '#F97316', '성공자 평균': PRIMARY},
+        color_discrete_map={'고객': '#F97316', '성공자 평균': PRIMARY},
         title='주요 생활 지표'
     )
     fig_cmp.update_layout(height=300, margin=dict(l=10, r=10, t=30, b=0))
@@ -264,6 +267,13 @@ else:
 # =========================
 st.markdown("---")
 st.write("### 리포트 저장")
+
+# 코멘트 생성
+comments = []
+if needs:
+    for title, current, tip in recs:
+        comments.append(f"- {title}: {current}")
+
 if st.button("PDF 미리 생성"):
     st.session_state["_pdf_bytes"] = build_pdf_bytes(name, comments)
     st.success("PDF가 생성되었습니다. 아래 버튼으로 다운로드하세요.")
@@ -285,8 +295,8 @@ else:
 # st.title("🧑‍⚕️ 상담자 전용")
 
 # if not st.session_state.get("patient"):
-#     st.warning("먼저 '환자 정보 입력' 페이지에서 정보를 저장하세요.")
-#     st.button("👉 환자 정보 입력으로 이동", on_click=go, args=(NAV_INPUT,))
+#     st.warning("먼저 '고객 정보 입력' 페이지에서 정보를 저장하세요.")
+#     st.button("👉 고객 정보 입력으로 이동", on_click=go, args=(NAV_INPUT,))
 #     st.stop()
 
 # patient = st.session_state["patient"]
@@ -294,9 +304,9 @@ else:
 
 # col1, col2 = st.columns([3, 1])
 # with col1:
-#     st.subheader(f"👤 환자: {name}  |  📅 {patient.get('날짜','-')}")
+#     st.subheader(f"👤 고객: {name}  |  📅 {patient.get('날짜','-')}")
 # with col2:
-#     selected = st.selectbox("다른 환자 보기(데모)", ["(선택 안 함)"] + list(patient_data_all.keys()))
+#     selected = st.selectbox("다른 고객 보기(데모)", ["(선택 안 함)"] + list(patient_data_all.keys()))
 #     if st.button("열기") and selected != "(선택 안 함)":
 #         p = patient_data_all[selected]
 #         st.session_state["patient"] = {"이름": selected, "날짜": patient.get("날짜",""), **p}
@@ -307,18 +317,18 @@ else:
 # df_compare = pd.DataFrame({
 #     "특성": success_avg["특성"],
 #     "금연 성공자 평균": success_avg["평균값"],
-#     "해당 환자": [p["수면시간"], p["아침식사"], p["운동빈도"], p["스트레스"]],
+#     "해당 고객": [p["수면시간"], p["아침식사"], p["운동빈도"], p["스트레스"]],
 # })
 
-# st.write("### 📊 금연 성공자 평균 vs 환자 데이터")
-# bar_compare(df_compare, "특성", ["금연 성공자 평균", "해당 환자"], y_label="값")
+# st.write("### 📊 금연 성공자 평균 vs 고객 데이터")
+# bar_compare(df_compare, "특성", ["금연 성공자 평균", "해당 고객"], y_label="값")
 
 # # 개선 코멘트
 # st.write("### 💬 개선 코멘트")
 # comments = []
 # for _, row in df_compare.iterrows():
-#     if row["해당 환자"] < row["금연 성공자 평균"]:
-#         diff = row["금연 성공자 평균"] - row["해당 환자"]
+#     if row["해당 고객"] < row["금연 성공자 평균"]:
+#         diff = row["금연 성공자 평균"] - row["해당 고객"]
 #         comments.append(f"- {row['특성']}이 평균보다 {diff:.1f}만큼 낮습니다. 개선이 필요합니다.")
 # if comments:
 #     for c in comments:
