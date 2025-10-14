@@ -53,20 +53,20 @@ def feature_is_economically_active(df_merge):
 def feature_occupation_type(df_merge):
     """
     직업을 3가지 유형으로 분류
-    - white_color: 관리자, 전문가, 사무직
-    - blue_color: 서비스, 판매, 농림어업, 기능원, 장치조작, 단순노무, 군인, 기타
-    - inactive: 미취업자
+    - 화이트칼라: 관리자, 전문가, 사무직
+    - 블루칼라: 서비스, 판매, 농림어업, 기능원, 장치조작, 단순노무, 군인, 기타
+    - 비경제활동: 미취업자
     
     변수: soa_06z2
-    1~3: white_color, 4~10: blue_color(군인 포함), 88: inactive, 기타: blue_color
+    1~3: 화이트칼라, 4~10: 블루칼라(군인 포함), 88: 비경제활동, 기타: 블루칼라
     """
     conditions = [
-        df_merge['soa_06z2'].isin([1, 2, 3]),    # white_color
-        df_merge['soa_06z2'] == 88                # inactive
+        df_merge['soa_06z2'].isin([1, 2, 3]),    # 화이트칼라
+        df_merge['soa_06z2'] == 88                # 비경제활동
     ]
-    choices = ['white_color', 'inactive']
-    # 나머지는 모두 blue_color (군인, 무응답 포함)
-    df_merge['occupation_type'] = np.select(conditions, choices, default='blue_color')
+    choices = ['화이트칼라', '비경제활동']
+    # 나머지는 모두 블루칼라 (군인, 무응답 포함)
+    df_merge['occupation_type'] = np.select(conditions, choices, default='블루칼라')
     
     return df_merge
 
@@ -93,9 +93,9 @@ def feature_is_employee(df_merge):
 def feature_marital_stability(df_merge):
     """
     혼인 상태를 안정성 기준으로 분류
-    - stable: 유배우
-    - single: 미혼
-    - unstable: 사별, 이혼, 별거, 기타(무응답)
+    - 안정: 유배우
+    - 미혼: 미혼
+    - 불안정: 사별, 이혼, 별거, 기타(무응답)
     
     변수: sod_02z3
     1: 유배우, 2: 미혼, 3: 사별, 4: 이혼, 5: 별거, 7/9: 무응답
@@ -104,8 +104,8 @@ def feature_marital_stability(df_merge):
         df_merge['sod_02z3'] == 1,                # 유배우
         df_merge['sod_02z3'] == 2                 # 미혼
     ]
-    choices = ['stable', 'single']
-    # 나머지는 모두 'unstable'으로 (사별, 이혼, 별거, 무응답 포함)
-    df_merge['marital_stability'] = np.select(conditions, choices, default='unstable')
+    choices = ['안정', '미혼']
+    # 나머지는 모두 '불안정'으로 (사별, 이혼, 별거, 무응답 포함)
+    df_merge['marital_stability'] = np.select(conditions, choices, default='불안정')
     
     return df_merge
