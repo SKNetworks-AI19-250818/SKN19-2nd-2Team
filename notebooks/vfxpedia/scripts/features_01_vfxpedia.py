@@ -117,9 +117,9 @@ def feature_occupation_type(df_merge):
         df_merge['soa_06z2'].isin([2, 3, 5]),    # 전문가, 관리자, 사무직
         df_merge['soa_06z2'] == 88                # 비경제활동
     ]
-    choices = ['화이트칼라', '비경제활동']
-    # 나머지는 모두 블루칼라 (군인, 무응답 포함)
-    df_merge['occupation_type'] = np.select(conditions, choices, default='블루칼라')
+    choices = ['white_color', 'inactive']
+    # 나머지는 모두 blue_color (군인, 무응답 포함)
+    df_merge['occupation_type'] = np.select(conditions, choices, default='blue_color')
     
     return df_merge
 
@@ -168,9 +168,9 @@ def feature_marital_stability(df_merge):
         df_merge['sod_02z3'] == 1,                # 유배우
         df_merge['sod_02z3'] == 2                 # 미혼
     ]
-    choices = ['안정', '미혼']
-    # 나머지는 모두 '불안정'으로 (사별, 이혼, 별거, 무응답 포함)
-    df_merge['marital_stability'] = np.select(conditions, choices, default='불안정')
+    choices = ['stable', 'single']
+    # 나머지는 모두 'unstable'으로 (사별, 이혼, 별거, 무응답 포함)
+    df_merge['marital_stability'] = np.select(conditions, choices, default='unstable')
     
     return df_merge
 
