@@ -23,3 +23,17 @@ def feature_time_col(df_merge):
             df_merge[time_col] = df_merge[time_col].fillna(0) + (df_merge[minute_col].fillna(0) / 60)
     
     return df_merge
+
+def feature_smoking_will(df_merge):
+    """
+    흡연일수(smb_02z1), 흡연량(smb_03z1)을 기준으로 이진 변수 생성
+    
+    규칙:
+    - 흡연일수: 10일 이하 → 0, 10일 초과~30일 이하 → 1
+    - 흡연량: 10개비 이하 → 0, 10개비 초과 → 1
+    """
+
+    df_merge['smoking_days_bin'] = df_merge['smb_02z1'].apply(lambda x: 0 if x <= 10 else 1)
+    df_merge['smoking_amt_bin'] = df_merge['smb_03z1'].apply(lambda x: 0 if x <= 10 else 1)
+    
+    return df_merge
