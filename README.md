@@ -1,101 +1,119 @@
-## 데이터 받는 방법 (Git LFS 설치 필수)
+## 주의사항
+1. **노션 링크 제거**: 최종 README에는 노션 링크를 포함하지 말고 실제 내용으로 채우기
+2. **이미지 첨부**: 주요 시각화 결과는 images/ 폴더에 저장
+3. **데이터 참고**: 모든 표와 수치는 노션 DB를 참고하여 작성
+4. **Markdown 포맷팅**: GitHub Markdown 문법 준수
 
-- 우리 프로젝트의 데이터(.csv 등 대용량 파일)는 Git LFS (Large File Storage) 로 관리됩니다.
-- **가장 먼저 Git LFS를 설치한 뒤 저장소를 clone 해야 정상적으로 데이터를 확인할 수 있습니다.**
+### 1. 프로젝트 타이틀 & 배지
 
-Git LFS 설치가 안 되어 있으면, 데이터 파일이 아래처럼 포인터 파일로만 보일 수 있습니다.
-```
-version https://git-lfs.github.com/spec/v1
-oid sha256:xxxxxxxx
-size 210123456
-```
+👉 GitHub 배지를 사용하여 기술 스택 표시
 
-### 1. Git LFS 설치 (최초 1회)
+### 2. 팀 소개
+
+👉 [팀 소개](https://www.notion.so/27f649136c1181d39b48ec87bbe2ab5a?pvs=21)
+
+- 팀명
+- 팀원 이름 & GitHub 링크
+- 역할 분담
+
+#### 프로젝트 폴더 구조
+- data : 데이터 저장소
+- notebooks : EDA · ML 실험 공간 + 팀리뷰
+- smoke_churn_model : (확정) 모델 패키지 코드
+
+<details>
+<summary>클릭</summary>
+
 ```bash
-# Windows (Git Bash)
-git lfs install
+# 데이터 저장소
+data/
+  ├─ raw_data.csv           # 원본 데이터 (수정 금지)
+  └─ analy_data.csv         # 분석 데이터 (수정 금지)
+
+# EDA · ML 실험 공간 + 팀리뷰
+notebooks/
+ ├─ 팀원1/
+ ├─ 팀원2/
+ ├─ 팀원3/
+ ├─ 팀원4/
+ ├─ 팀원5/
+ │
+ └─ team/                  # 팀리뷰
+    ├─ 01_데이터정제.ipynb  # 데이터 전처리 코드 통합 
+    ├─ 02_ML학습준비.ipynb  # 모델 테스트 및 피처 생성
+    │  
+    ├─ columns.json        # 활용 컬럼 관리
+    ├─ features_01.py      # 담당자별 피처코드
+    ├─ features_...py      
+    ├─ preprocess.py       # 전처리 패키징
+    └─ test.ipynb          # 모듈 테스트
+
+# (확정) 모델 패키지 코드
+smoke-churn-model/
+ ├─ components/
+ │   ├─ train.py      # 최종 모델 학습
+ │   ├─ evaluate.py   # 최종 모델 평가
+ │   ├─ predict.py    # 최종 모델 예측
+ │   └─ cv.py         # 5개 모델 학습 및 평가 검증
+ │
+ ├─ modules/
+ │   ├─ config.py     # 경로 및 환경설정
+ │   └─ preprocess.py # 데이터 로드 및 전처리 
+ │
+ └─ resource/
+     └─ columns.json  # 활용 피처 관리
 ```
 
-### 2. 저장소 Clone
-```bash
-git clone https://github.com/SKNetworks-AI19-250818/SKN19-2nd-2Team.git
-cd SKN19-2nd-2Team
-```
+</details>
 
-### 3. LFS 파일 다운로드
-``` bash
-# 일반 clone 시 자동으로 내려오지만, 혹시 빠진 경우 실행
-git lfs pull
-```
+### 3. 프로젝트 개요
+
+- 프로젝트명
+- 간단한 소개 (2-3문장)
+- 프로젝트 필요성 (배경)
+- 프로젝트 목표
+
+### 4. 기술 스택
+
+- Python
+- 주요 라이브러리: pandas, scikit-learn, xgboost 등
+
+### 5. WBS
+
+👉 [WBS DB](https://www.notion.so/27f649136c11814db5cff4f0082b24d9?pvs=21)
+
+### 6. 데이터 전처리 결과서
+
+👉 [EDA 분석](https://www.notion.so/EDA-27f649136c1181f8822fd6c052931839?pvs=21)
+
+- 데이터셋 개요
+- 주요 발견사항
+- 전처리 과정
+
+### 7. 인공지능 학습 결과서
+
+👉 [모델 레지스트리](https://www.notion.so/27f649136c1181b4bf82f370fb2ff3ba?pvs=21) 
+👉 [성능 평가](https://www.notion.so/27f649136c1181569785c70b4efe519d?pvs=21) 
+
+- 모델 비교 표
+- 최종 모델 선정 이유
+- 주요 성능 지표
+
+### 8. 수행 결과
+
+- 목표 달성 현황
+- 주요 성과
+- 한계 및 개선점
+
+### 9. 한 줄 회고
+
+👉 [최종 회고](https://www.notion.so/27f649136c11818e80b7ed752f31a687?pvs=21)
 
 ---
 
-<br>
-<br>
+## 추가 권장 섹션
 
-## 흡연 이탈(흡연 → 비흡연) 예측 프로젝트
-
-### 프로젝트 개요
-- 고객 이탈 예측이라는 큰 주제에서 출발하여, 이를 **흡연 이탈(금연 성공)** 이라는 주제로 구체화하였습니다.
-- 지역사회건강조사(Community Health Survey) 데이터를 활용하여 흡연자의 이탈(흡연 → 비흡연) 가능성을 예측하고, 
-- 금연 희망자들이 어떤 상황을 달성하면 성공 확률이 높아지는지 인사이트를 도출하는 것을 목표로 합니다.
-
-### 문제 정의
-- 문제: 어떤 요인들이 흡연자의 금연 이탈에 영향을 주는가?
-- 목표: 금연 이탈 여부를 예측하는 모델 개발
-- 활용: 금연 희망자들이 "성공 조건(특정 피처)"을 달성하도록 유도 → 금연 이탈 확률 향상 기대
-
-### 데이터 개요
-- 출처: 2024년 지역사회건강조사 (설문조사 기반)
-- 대상: 조사시점에 표본가구에 거주하는 만 19세 이상 성인
-- 기간: 2024년 5월 16일 ~ 7월 31일
-- 규모
-    - 원본: 231,728 rows × 209 columns
-    - 분석용(1차 가공): 89,822 rows × 147 columns (label 포함)
-- 주요 변수(카테고리)
-    ```
-    기본정보
-    가구정보
-    건강행태(흡연)
-    건강행태(음주)
-    건강행태(신체활동)
-    건강행태(식생활)
-    건강행태(비만및체중조절)
-    건강행태(구강건강)
-    정신건강
-    보건기관이용
-    교육및경제활동
-    ```
-
-### 분석 데이터 1차 가공 코드
-- 필요한 컬럼 식별 및 분석 대상 범위 조정
-- smoke_anal_data_churn.csv → data/analy_data.csv
-
-```python
-# 과거 또는 현재 흡연자만 도출
-com_df = pd.read_csv('Community_Health_Survey_data.csv')
-anal_data = com_df[~((com_df['sma_03z2'] > 3.0) & (com_df['sma_12z2'] > 2.0) & (com_df['sma_37z1'] > 3.0))].reset_index(drop=True)
-
-# 현재 흡연 여부. 하나라도 현재 피우고 있으면 흡연 중
-currently_smoking = (
-    anal_data['sma_03z2'].isin([1, 2]) |
-    (anal_data['sma_12z2'] == 1) |
-    anal_data['sma_37z1'].isin([1, 2])
-)
-
-# 과거에 피웠으나 현재 피우지 않음
-stop_smoked = (
-    (anal_data['sma_03z2'] == 3) |
-    (anal_data['sma_12z2'] == 2) |
-    (anal_data['sma_37z1'] == 3)
-)
-
-# 금연 성공자: 현재는 흡연 안 하고, 과거엔 피운 적 있음
-anal_data['churn'] = np.where(
-    (~currently_smoking) & stop_smoked,
-    1,
-    0
-)
-
-anal_data.to_csv('smoke_anal_data_churn.csv', index=False, encoding='utf-8-sig')
-```
+- **설치 및 실행 방법**
+- **프로젝트 구조**
+- **사용 예시**
+- **라이센스**
