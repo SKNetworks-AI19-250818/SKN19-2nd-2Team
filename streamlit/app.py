@@ -1,149 +1,80 @@
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-from fpdf import FPDF
+from streamlit.components.v1 import html   # 👈 추가
+from utils.state import init_state, NAV_HOME, NAV_INPUT, NAV_COUNSELOR
+from utils.theme import inject_theme
 
-# -----------------------------
-# 0️⃣ 예시용 데이터
-# -----------------------------
-# 금연 성공자 평균 데이터 (예시)
-success_avg = pd.DataFrame({
-    '특성': ['수면시간', '아침식사', '운동빈도', '스트레스'],
-    '평균값': [7, 1, 4, 3]
-})
+st.set_page_config(page_title="금연 클리닉 상담 지원", layout="wide")
+init_state()
+inject_theme()
 
-# 환자 데이터 (예시)
-patient_data_all = {
-    '홍길동': {'수면시간': 5, '아침식사': 0, '운동빈도': 2, '스트레스': 5},
-    '김철수': {'수면시간': 6, '아침식사': 1, '운동빈도': 3, '스트레스': 4}
-}
+if st.query_params.get("goto") == "input":
+    try:
+        st.switch_page("pages/01_환자_정보_입력.py")
+    except Exception:
+        pass
 
-# -----------------------------
-# 1️⃣ 홈 화면
-# -----------------------------
-st.title("🚭 금연 클리닉 상담 지원 시스템")
+st.title("금연 클리닉 상담 지원")
+st.caption("사이드바에서 페이지를 선택하세요. 기본 순서: 환자 정보 입력 → 상담자 전용")
 
-page = st.sidebar.radio("메뉴 선택", ["홈", "환자 정보 입력", "상담자 전용"])
+# ===== 스크롤 히어로 섹션 =====
+def render_scroll_hero():
+    import streamlit.components.v1 as components
+    components.html(r"""
+    <div id="hero-wrapper">
+      <div id="hero">
+        <div class="copy">
+          <p class="l1">담배 끊기, 혼자선 어렵지만 함께라면 가능합니다.</p>
+          <p class="l2">당신의 폐가 미소 짓는 날, 그 여정을 함께합니다.</p>
+          <!-- ✅ CTA 버튼 (링크형) -->
+          <a class="cta" href="?page=%ED%99%98%EC%9E%90%20%EC%A0%95%EB%B3%B4%20%EC%9E%85%EB%A0%A5">지금 시작하기</a>
+        </div>
+      </div>
+      <div style="height: 150vh;"></div>
+    </div>
 
-if page == "홈":
-    st.subheader("금연 희망자 맞춤형 분석 서비스")
-    st.write("금연 클리닉 상담사를 위한 데이터 기반 상담 보조 도구입니다.")
-    if st.button("👉 환자 정보 입력하러 가기"):
-        st.session_state['page'] = "환자 정보 입력"
+    <style>
+      :root{
+        --primary:#78D8A5; --ink:#334155; --muted:#64748B; --bg:linear-gradient(180deg,#EAF8F0 0%,#FFFFFF 100%);
+      }
+      #hero-wrapper{position:relative;width:100%}
+      #hero{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);
+            border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.04);overflow:hidden}
+      #hero .copy{text-align:center;transform:scale(1);opacity:.8}
+      .l1{margin:0 0 8px 0;font-weight:800;font-size:2rem;color:var(--ink)}
+      .l2{margin:0 0 18px 0;font-size:1.1rem;color:var(--muted)}
+      /* ✅ 버튼 스타일 */
+      .cta{display:inline-block;padding:12px 18px;border-radius:12px;background:var(--primary);color:white;
+           font-weight:700;text-decoration:none;box-shadow:0 6px 18px rgba(120,216,165,.35);transition:transform .15s ease}
+      .cta:hover{transform:translateY(-1px)}
+      @media (min-width:1100px){ .l1{font-size:2.2rem} .l2{font-size:1.2rem} }
+    </style>
 
-# -----------------------------
-# 2️⃣ 환자 정보 입력
-# -----------------------------
-elif page == "환자 정보 입력":
-    st.subheader("🧾 환자 정보 입력")
+    <script>
+      (function(){
+        const copy=document.querySelector('#hero .copy');
+        const cta=document.querySelector('.cta');
+        const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+        function onScroll(){
+          const y=(window.parent&&window.parent!==window?window.parent.scrollY:window.scrollY)||0;
+          const t=clamp(y/500,0,1);                    // 0~500px에서 변화
+          const s=1 + 0.5*t;                          // 1.00 → 1.5
+          const o=0.8 + 0.2*t;                         // 0.80 → 1.00
+          copy.style.transform=`scale(${s})`;
+          copy.style.opacity=o.toFixed(2);
+          // 버튼도 살짝 함께 확대
+          cta.style.transform=`scale(${1+0.05*t})`;
+          requestAnimationFrame(onScroll);
+        }
+        requestAnimationFrame(onScroll);
+      })();
+    </script>
+    """, height=820, scrolling=True)
 
-    name = st.text_input("환자 이름")
-    date = st.date_input("상담 날짜")
 
-    st.write("### 환자 특성 입력")
-    sleep = st.number_input("수면 시간 (시간)", 0, 12, 7)
-    breakfast = st.selectbox("아침식사 여부", ["예", "아니오"])
-    exercise = st.slider("운동 빈도 (주당 횟수)", 0, 7, 3)
-    stress = st.slider("스트레스 수준 (1~5)", 1, 5, 3)
 
-    st.write("---")
-    password = st.text_input("상담자 비밀번호 입력", type="password")
 
-    if st.button("🔒 상담자 전용 화면으로 이동"):
-        if password == "clinic123":  # 예시용 비밀번호
-            st.session_state['patient'] = {
-                '이름': name,
-                '날짜': str(date),
-                '수면시간': sleep,
-                '아침식사': 1 if breakfast == "예" else 0,
-                '운동빈도': exercise,
-                '스트레스': stress
-            }
-            st.session_state['page'] = "상담자 전용"
-            st.success("접근 승인되었습니다.")
-        else:
-            st.error("비밀번호가 올바르지 않습니다.")
+render_scroll_hero()
+# ===== 스크롤 히어로 끝 =====
 
-# -----------------------------
-# 3️⃣ 상담자 전용 화면
-# -----------------------------
-elif page == "상담자 전용":
-    if 'patient' not in st.session_state:
-        st.warning("먼저 환자 정보를 입력해주세요.")
-    else:
-        patient = st.session_state['patient']
-        name = patient['이름']
-
-        # 헤더
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.subheader(f"👤 환자: {name}")
-        with col2:
-            selected_patient = st.selectbox("다른 환자 보기", list(patient_data_all.keys()))
-            if st.button("열기"):
-                patient = patient_data_all[selected_patient]
-                name = selected_patient
-
-        # 비교 데이터프레임 생성
-        df_compare = pd.DataFrame({
-            '특성': success_avg['특성'],
-            '금연 성공자 평균': success_avg['평균값'],
-            '해당 환자': [
-                patient['수면시간'],
-                patient['아침식사'],
-                patient['운동빈도'],
-                patient['스트레스']
-            ]
-        })
-
-        # 그래프
-        st.write("### 📊 금연 성공자 평균 vs 환자 데이터 비교")
-        fig, ax = plt.subplots()
-        df_compare.plot(x='특성', kind='bar', ax=ax)
-        st.pyplot(fig)
-
-        # 개선 코멘트
-        st.write("### 💬 개선 코멘트")
-        comments = []
-        for i, row in df_compare.iterrows():
-            if row['해당 환자'] < row['금연 성공자 평균']:
-                diff = row['금연 성공자 평균'] - row['해당 환자']
-                comments.append(f"- **{row['특성']}**이 평균보다 {diff:.1f}만큼 낮습니다. 개선이 필요합니다.")
-        if comments:
-            for c in comments:
-                st.write(c)
-        else:
-            st.success("모든 항목이 평균 이상입니다!")
-
-        # 재방문 환자 비교 (사이드 패널)
-        with st.expander("📈 과거 데이터 비교 보기"):
-            past_data = {'수면시간': 6, '아침식사': 1, '운동빈도': 3, '스트레스': 4}  # 예시
-            df_past = pd.DataFrame({
-                '특성': success_avg['특성'],
-                '이번 방문': [
-                    patient['수면시간'],
-                    patient['아침식사'],
-                    patient['운동빈도'],
-                    patient['스트레스']
-                ],
-                '지난 방문': [
-                    past_data['수면시간'],
-                    past_data['아침식사'],
-                    past_data['운동빈도'],
-                    past_data['스트레스']
-                ]
-            })
-            fig2, ax2 = plt.subplots()
-            df_past.plot(x='특성', kind='bar', ax=ax2)
-            st.pyplot(fig2)
-
-        # PDF 저장 버튼
-        if st.button("📄 PDF로 저장"):
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, txt=f"금연 상담 리포트 - {name}", ln=True)
-            for c in comments:
-                pdf.cell(200, 10, txt=c, ln=True)
-            pdf.output(f"{name}_report.pdf")
-            st.success(f"{name}_report.pdf 파일이 저장되었습니다.")
+with st.expander("상태(디버그)"):
+    st.json({k: v for k, v in st.session_state.items() if k in ["nav","patient"]})

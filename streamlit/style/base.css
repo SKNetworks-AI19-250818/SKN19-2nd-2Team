@@ -1,0 +1,34 @@
+:root {
+  --primary: #78D8A5;
+  --primary-weak: #E9F8F0;
+  --ink: #0F172A;
+  --muted: #64748B;
+  --card: #FFFFFF;
+  --bg: #F7FAF9;
+  --border: #EEF2F6;
+}
+.block-container { padding-top: 1.5rem; padding-bottom: 3rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px 18px;
+  box-shadow: 0 10px 30px rgba(16,24,40,0.04);
+}
+.card-header { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+.card-title { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.kpi { font-size: 28px; font-weight: 800; color: var(--ink); }
+.badge {
+  display:inline-block; padding:4px 10px; border-radius:999px;
+  background: var(--primary-weak); color: var(--ink); font-weight:600; font-size:12px;
+}
+.hero {
+  display:flex; gap:18px; align-items:center; justify-content:space-between;
+  background: linear-gradient(180deg, var(--primary-weak), #fff);
+  border:1px solid var(--border); border-radius:18px; padding:18px 20px;
+}
+.hero .name { font-size:18px; font-weight:800; color: var(--ink); }
+.hero .bmi { font-size:22px; font-weight:800; color: var(--ink); }
+.hero .meta { color: var(--muted); font-size:13px; }
+hr.soft { border: 0; height: 1px; background: var(--border); margin: 12px 0; }
+[data-testid="stHorizontalBlock"] > div { gap: 14px !important; }
