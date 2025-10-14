@@ -157,17 +157,17 @@ streamlit/
 10. 경제활동에 따른 금연 성공 상관 관계
 
 
-![alt text](image.png)
+![alt text](/docs/img/image.png)
 연령·성별: 나이가 많을수록 금연 성공률이 높고, 여성은 남성보다 이른 시기에 금연 하는 경향
 
-![alt text](image-1.png)
+![alt text](/docs/img/image-1.png)
 가구 구성: 1인 가구는 금연 성공률이 낮음 → 생활 패턴의 차이 가능성
 
-![alt text](image-2.png)
+![alt text](/docs/img/image-2.png)
 경제적 요인: 비수급자, 일정 수준 이상의 소득층이 금연 성공률이 높음. 단, 저소득층에서도 예외적 사례 존재
 
-![alt text](image-3.png)
-![alt text](image-4.png)
+![alt text](/docs/img/image-3.png)
+![alt text](/docs/img/image-4.png)
 생활 습관: 절주·금주를 꾸준히 실천할수록 금연 성공률이 높음. 음주 빈도나 폭음 경험이 많을수록 실패 확률이 높음
 특히, 남자의 경우 더 두드러짐.
 
