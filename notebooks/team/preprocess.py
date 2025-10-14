@@ -4,21 +4,26 @@
 # 2. featuring_data(df_merge)
 # ==================================================
 import os
+import sys
 import json
 import pandas as pd
 import numpy as np
 from pathlib import Path
+current_path=os.getcwd()
+sys.path.append(os.path.abspath(os.path.join(os.path.join(current_path, 'notebooks/team'))))
 
 ROOT_DIR = Path("").resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 DATA_PATH = DATA_DIR / "raw_data.csv"
-SAVE_FILE = DATA_DIR / "prep_data_v1.csv"
+ANAL_PATH =  DATA_DIR / "analy_data_v2.csv"
+PREP_PATH = DATA_DIR / "prep_data_v1.csv" 
 JSON_FILE = ROOT_DIR / "notebooks" / "team" / "columns.json"
 
 # 개인 폴더 경로에 있는 columns.json 활용시
-MY_FILE = ROOT_DIR / "notebooks" / "sosodoit" / "modules" / "columns.json"
+nick_name = "sosodoit"
+MY_FILE = ROOT_DIR / "notebooks" / nick_name / "modules" / "columns.json"
 
-with open(MY_FILE, "r", encoding="utf-8") as f:
+with open(JSON_FILE, "r", encoding="utf-8") as f:
     columns_dict = json.load(f)
 
 # ==================================================
@@ -53,6 +58,7 @@ def rename_to_kor(df):
 # ==================================================
 # Data Cleaning
 # ==================================================
+from modules.features_pdy import Liquid_method2
 def make_target(data):
 
     # 과거 또는 현재 흡연자만 도출
@@ -82,6 +88,10 @@ def make_target(data):
         1,
         0
     )
+    
+    # 액상형 관련 처리: 액상형 피워봤고, 최근 한 달 동안 피운 일수가 0을 초과하는데 churn이 1이면 0으로 변경
+    anal_data = Liquid_method2(anal_data)
+    anal_data.to_csv(ANAL_PATH, index=False, encoding='utf-8-sig')
 
     return anal_data
 
@@ -254,34 +264,39 @@ def scaling_feature(train_data, test_data):
     pass
 
 # 이곳에 담당 모듈 임포트 추가
-from notebooks.team.features_ksh import feature_age_group, feature_is_single, feature_house_income, feature_dementia_case, feature_smoke_avg_per_day
-from notebooks.team.features_mhs import feature_time_col
-from notebooks.team.features_ohj import feature_education_group, feature_is_economically_active, feature_occupation_type, feature_is_employee, feature_is_married, feature_marital_stability
+from modules.features_ksh import feature_age_group, feature_is_single, feature_house_income, feature_dementia_case, feature_smoke_avg_per_day
+from modules.features_mhs import feature_time_col
+from modules.features_ohj import feature_education_group, feature_is_economically_active, feature_occupation_type, feature_is_employee, feature_marital_stability
+from modules.features_pdy import feature_weight_control_method, feature_activity_score_and_weight
+from modules.features_sangmin import apply_my_features
 
 def featuring_data(df_merge):
     
+    """이곳에 생성할 피처 추가"""
     df_merge = feature_age_group(df_merge)
     df_merge = feature_is_single(df_merge)
     df_merge = feature_house_income(df_merge)
     df_merge = feature_dementia_case(df_merge)
     df_merge = feature_smoke_avg_per_day(df_merge)
-    
-    """이곳에 생성할 피처 추가"""
-    # df_merge = feature_time_col(df_merge)
-    # df_merge = feature_education_group(df_merge)
-    # df_merge = feature_is_economically_active(df_merge)
-    # df_merge = feature_occupation_type(df_merge)
-    # df_merge = feature_is_employee(df_merge)
-    # df_merge = feature_is_married(df_merge)
-    # df_merge = feature_marital_stability(df_merge)
+    df_merge = feature_time_col(df_merge)
+    df_merge = feature_education_group(df_merge)
+    df_merge = feature_is_economically_active(df_merge)
+    df_merge = feature_occupation_type(df_merge)
+    df_merge = feature_is_employee(df_merge)
+    df_merge = feature_weight_control_method(df_merge)
+    df_merge = feature_activity_score_and_weight(df_merge)
+    df_merge = apply_my_features(df_merge) # 12개 피처생성 | 19개 삭제
+    df_merge = feature_marital_stability(df_merge)
 
     return df_merge
 
 def drop_feature(df_merge):
-    
-    df_merge = df_merge.drop(['fma_13z1', 'fma_14z1','fma_27z1','fma_26z1','smb_01z1','smb_03z1','smb_06z1'], axis=1)
-    
+      
     """이곳에 모델 훈련과 관련 없는, 피처 생성 후 필요 없는 속성 제거 추가"""
-    # df_merge = df_merge.drop(['mtc_04z1', 'mtc_06z1', 'mtc_09z1', 'mtc_11z1'], axis=1)
-
+    df_merge = df_merge.drop(['fma_13z1', 'fma_14z1', 'fma_27z1', 'fma_26z1', 'smb_01z1', 'smb_03z1', 'smb_06z1'], axis=1, errors='ignore') # ksh
+    df_merge = df_merge.drop(['mtc_04z1', 'mtc_06z1', 'mtc_09z1', 'mtc_11z1','soa_01z1', 'sob_01z1','soa_07z1','soa_06z2', 'sod_02z3'], axis=1,  errors='ignore') # ohj
+    df_merge = df_merge.drop(['nua_01z2', 'oba_02z1', 'oba_01z1', 'obb_01z1', 'obb_02a1', 'obb_02b1', 'obb_02c1',
+                              'obb_02d1', 'obb_02e1', 'obb_02f1', 'obb_02g1', 'obb_02h1', 'obb_02i1',
+                              'ore_03z2', 'ord_01d2', 'ord_01f3', 'ord_05z1', 'ora_01z1', 'orb_01z1'],
+                              axis=1, errors='ignore') # sangmin
     return df_merge
