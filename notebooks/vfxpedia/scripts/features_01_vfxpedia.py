@@ -5,14 +5,13 @@
 날짜: 2025-10-13
 목적: 교육수준, 경제활동, 직업, 혼인 관련 Feature 생성
 
-생성 Feature (7개):
+생성 Feature (6개):
 1. education_group: 교육수준 그룹 (0:저학력/1:중학력/2:고학력)
 2. is_economically_active: 경제활동 여부 (0/1)
 3. job_risk_group: 직업 위험도 (0:저위험/1:중위험/2:고위험/-1:해당없음) [EDA 07 기반]
-4. occupation_type: 직업 유형 (화이트칼라/블루칼라/비경제활동) [일반 분류, 보조]
+4. occupation_type: 직업 유형 (화이트칼라/블루칼라/비경제활동) [일반 분류, 보조, 군인 포함]
 5. is_employee: 임금근로자 여부 (0/1)
-6. is_married: 배우자 있음 (0/1)
-7. marital_stability: 혼인 안정성 (안정/미혼/불안정)
+6. marital_stability: 혼인 안정성 (안정/미혼/불안정, 무응답 포함)
 ==================================================
 """
 
@@ -107,19 +106,20 @@ def feature_occupation_type(df_merge):
     """
     직업을 일반적인 유형으로 분류 (보조 변수)
     - 화이트칼라: 관리자, 전문가, 사무직
-    - 블루칼라: 서비스, 판매, 농림어업, 기능원, 장치조작, 단순노무
+    - 블루칼라: 서비스, 판매, 농림어업, 기능원, 장치조작, 단순노무, 군인, 기타
     - 비경제활동: 미취업자
     
     변수: soa_06z2
     1: 농림어업, 2: 전문가, 3: 관리자, 4: 단순노무, 5: 사무
-    6: 기계조작, 7: 판매, 8: 서비스, 9: 기능원, 10: 군인
+    6: 기계조작, 7: 판매, 8: 서비스, 9: 기능원, 10: 군인, 88: 비경제활동
     """
     conditions = [
-        df_merge['soa_06z2'].isin([2, 3, 5]),              # 전문가, 관리자, 사무직
-        df_merge['soa_06z2'].isin([1, 4, 6, 7, 8, 9, 10]) # 나머지 (블루칼라)
+        df_merge['soa_06z2'].isin([2, 3, 5]),    # 전문가, 관리자, 사무직
+        df_merge['soa_06z2'] == 88                # 비경제활동
     ]
-    choices = ['화이트칼라', '블루칼라']
-    df_merge['occupation_type'] = np.select(conditions, choices, default='비경제활동')
+    choices = ['화이트칼라', '비경제활동']
+    # 나머지는 모두 블루칼라 (군인, 무응답 포함)
+    df_merge['occupation_type'] = np.select(conditions, choices, default='블루칼라')
     
     return df_merge
 
@@ -149,28 +149,6 @@ def feature_is_employee(df_merge):
 
 
 # ==================================================
-# 내용: 배우자 유무
-# 함수명: feature_is_married
-# input: df_merge(dataframe)
-# output: df_merge(dataframe)
-# ==================================================
-def feature_is_married(df_merge):
-    """
-    배우자 있음 (0/1)
-    - 1: 배우자 있음 (유배우)
-    - 0: 배우자 없음
-    
-    변수: sod_02z3
-    1: 유배우, 2: 미혼, 3: 사별, 4: 이혼, 5: 별거
-    """
-    df_merge['is_married'] = np.where(
-        df_merge['sod_02z3'] == 1, 1, 0
-    )
-    
-    return df_merge
-
-
-# ==================================================
 # 내용: 혼인 안정성
 # 함수명: feature_marital_stability
 # input: df_merge(dataframe)
@@ -181,18 +159,18 @@ def feature_marital_stability(df_merge):
     혼인 상태를 안정성 기준으로 분류
     - 안정: 유배우
     - 미혼: 미혼
-    - 불안정: 사별, 이혼, 별거
+    - 불안정: 사별, 이혼, 별거, 기타(무응답)
     
     변수: sod_02z3
-    1: 유배우, 2: 미혼, 3: 사별, 4: 이혼, 5: 별거
+    1: 유배우, 2: 미혼, 3: 사별, 4: 이혼, 5: 별거, 7/9: 무응답
     """
     conditions = [
         df_merge['sod_02z3'] == 1,                # 유배우
-        df_merge['sod_02z3'] == 2,                # 미혼
-        df_merge['sod_02z3'].isin([3, 4, 5])     # 사별, 이혼, 별거
+        df_merge['sod_02z3'] == 2                 # 미혼
     ]
-    choices = ['안정', '미혼', '불안정']
-    df_merge['marital_stability'] = np.select(conditions, choices, default=np.nan)
+    choices = ['안정', '미혼']
+    # 나머지는 모두 '불안정'으로 (사별, 이혼, 별거, 무응답 포함)
+    df_merge['marital_stability'] = np.select(conditions, choices, default='불안정')
     
     return df_merge
 
@@ -219,16 +197,14 @@ def create_all_features(df_merge):
     df_merge = feature_job_risk_group(df_merge)
     df_merge = feature_occupation_type(df_merge)
     df_merge = feature_is_employee(df_merge)
-    df_merge = feature_is_married(df_merge)
     df_merge = feature_marital_stability(df_merge)
     
-    print("✅ 7개 Feature 생성 완료!")
+    print("✅ 6개 Feature 생성 완료!")
     print(f"   - education_group: {df_merge['education_group'].notna().sum():,}개")
     print(f"   - is_economically_active: {df_merge['is_economically_active'].notna().sum():,}개")
     print(f"   - job_risk_group: {df_merge['job_risk_group'].notna().sum():,}개")
     print(f"   - occupation_type: {df_merge['occupation_type'].notna().sum():,}개")
     print(f"   - is_employee: {df_merge['is_employee'].notna().sum():,}개")
-    print(f"   - is_married: {df_merge['is_married'].notna().sum():,}개")
     print(f"   - marital_stability: {df_merge['marital_stability'].notna().sum():,}개")
     
     return df_merge
