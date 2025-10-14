@@ -7,8 +7,4 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = ROOT_DIR / "data"
 
 # 모델 경로
-MODEL_DIR = ROOT_DIR / "ml" / "models"
-
-print(f"ROOT_DIR: {ROOT_DIR}")
-print(f"DATA_DIR: {DATA_DIR}")
-print(f"MODEL_DIR: {MODEL_DIR}")
+MODEL_DIR = ROOT_DIR / "smoke_churn_model" / "resource"
