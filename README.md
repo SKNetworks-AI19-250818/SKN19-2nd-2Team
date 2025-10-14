@@ -4,17 +4,27 @@
 3. **데이터 참고**: 모든 표와 수치는 노션 DB를 참고하여 작성
 4. **Markdown 포맷팅**: GitHub Markdown 문법 준수
 
-### 1. 프로젝트 타이틀 & 배지
+# SKN19-2ND-2TEAM
+- 사진임시!@! 금연클리닉 솔루션! 우리 금연클리닉을 대표하는 이미지?
+- 떙땡떙금연클리닉 이러한 개인화솔루션으로 건강증진을위해 건강을 보필, 관리해주겠다 느낌?
 
-👉 GitHub 배지를 사용하여 기술 스택 표시
+<img width="1000" height="350" alt="image" src="https://github.com/user-attachments/assets/2e1cd897-60fc-42f5-b136-6c117dc9b227" />
 
-### 2. 팀 소개
+## 이조는차분하조
+## 팀 소개
 
-👉 [팀 소개](https://www.notion.so/27f649136c1181d39b48ec87bbe2ab5a?pvs=21)
+<div align="center">
+ 
+| 김소희 | 마한성 | 박도연 | 오흥재 | 임상민 |
+| --- | --- | --- | --- | --- |
+| 사진 | 사진 |사진  |사진 |
+| <div align="center">[![GitHub](https://img.shields.io/badge/GitHub-sosodoit-181717?style=flat&logo=github&logoColor=white)](https://github.com/sosodoit)</div> | <div align="center">[![GitHub](https://img.shields.io/badge/GitHub-gitsgetit-181717?style=flat&logo=github&logoColor=white)](https://github.com/gitsgetit)</div> | <div align="center">[![GitHub](https://img.shields.io/badge/GitHub-doyeon-181717?style=flat&logo=github&logoColor=white)](https://github.com/doyeon)</div> | <div align="center">[![GitHub](https://img.shields.io/badge/GitHub-vfxpedia-181717?style=flat&logo=github&logoColor=white)](https://github.com/vfxpedia)</div> | <div align="center">[![GitHub](https://img.shields.io/badge/GitHub-sangmin-181717?style=flat&logo=github&logoColor=white)](https://github.com/sangmin)</div> |
 
+</div>
 - 팀명: 이조는 차분하조
 - 팀원 이름 & GitHub 링크
 - 역할 분담
+
 #### 산출물 경로
 
 분석/개발과정
@@ -30,6 +40,13 @@
 전처리 코드|	preprocess.py|	데이터 전처리|	modules/...
 모델 코드|	train.py|	모델 학습 및 저장|	components/...
 Streamlit 코드|	app.py|	분석 대시보드|	streamlit/
+
+#### 협업 및 프로젝트 관리
+- 데이터 관리
+- 코드 관리
+- 브랜치 활용
+- PR & Issue 활용
+- 회의
 
 #### 프로젝트 폴더 구조
 - data : 데이터 저장소
@@ -96,7 +113,7 @@ smoke-churn-model/
 - 프로젝트 필요성 (배경)
 금연을 하고자 하는 사람들에게 구체적인 행동 교정을 통해 목표 달성이 보다 수월하게 돕는다
 
-- 프로젝트 목표
+## 프로젝트 목표
 1. 어떤 요인들이 흡연 이탈에 영향을 주는지 분석
 2. 금연 이탈 예측 모델 개발
 3. 금연 희망자들이 "흡연 이탈"을 달성하도록 유도 → 흡연 이탈(금연 성공) 장려
