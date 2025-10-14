@@ -285,7 +285,7 @@ def featuring_data(df_merge):
     df_merge = feature_is_employee(df_merge)
     df_merge = feature_weight_control_method(df_merge)
     df_merge = feature_activity_score_and_weight(df_merge)
-    df_merge = apply_my_features(df_merge) # 12개 피처생성 | 19개 삭제
+    #df_merge = apply_my_features(df_merge) # 12개 피처생성 | 19개 삭제
     df_merge = feature_marital_stability(df_merge)
 
     return df_merge
@@ -295,8 +295,8 @@ def drop_feature(df_merge):
     """이곳에 모델 훈련과 관련 없는, 피처 생성 후 필요 없는 속성 제거 추가"""
     df_merge = df_merge.drop(['fma_13z1', 'fma_14z1', 'fma_27z1', 'fma_26z1', 'smb_01z1', 'smb_03z1', 'smb_06z1'], axis=1, errors='ignore') # ksh
     df_merge = df_merge.drop(['mtc_04z1', 'mtc_06z1', 'mtc_09z1', 'mtc_11z1','soa_01z1', 'sob_01z1','soa_07z1','soa_06z2', 'sod_02z3'], axis=1,  errors='ignore') # ohj
-    df_merge = df_merge.drop(['nua_01z2', 'oba_02z1', 'oba_01z1', 'obb_01z1', 'obb_02a1', 'obb_02b1', 'obb_02c1',
-                              'obb_02d1', 'obb_02e1', 'obb_02f1', 'obb_02g1', 'obb_02h1', 'obb_02i1',
-                              'ore_03z2', 'ord_01d2', 'ord_01f3', 'ord_05z1', 'ora_01z1', 'orb_01z1'],
+    df_merge = df_merge.drop([ 'oba_02z1', 'oba_01z1', 'obb_01z1','obb_02c1',
+                               'obb_02e1', 'obb_02f1', 'obb_02g1', 'obb_02h1', 'obb_02i1',
+                            ],
                               axis=1, errors='ignore') # sangmin
     return df_merge

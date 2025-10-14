@@ -35,7 +35,7 @@ def feature_activity_score_and_weight(df_merge):
 
     df_merge["activity_score_weight"] = (
         3 * df_merge["pha_04z1"].fillna(0) +
-        2 * df_merge["pha_06z1"].fillna(0) +
+        2 * df_merge["pha_07z1"].fillna(0) +
         1 * df_merge["phb_01z1"].fillna(0)
     )
     # 고강도, 중강도, 걷기 활동. 77 이상 NaN 처리되었다 가정
