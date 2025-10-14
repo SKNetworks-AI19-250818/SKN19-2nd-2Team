@@ -5,14 +5,13 @@ Feature Engineering: 교육/경제 변수 (vfxpedia)
 작성일: 2025-10-13
 목적: 교육수준, 경제활동, 직업, 혼인에 따른 금연 성공 상관관계 Feature 생성
 
-최종 Feature 목록 (7개):
+최종 Feature 목록 (6개):
 1. education_group: 교육수준 그룹 (0:저학력/1:중학력/2:고학력) [EDA 06 기반]
 2. is_economically_active: 경제활동 여부 (0/1) [EDA 07 기반]
 3. job_risk_group: 직업 위험도 (0:저위험/1:중위험/2:고위험/-1:해당없음) [EDA 07 기반]
-4. occupation_type: 직업 유형 (화이트칼라/블루칼라/비경제활동) [일반 분류, 보조]
+4. occupation_type: 직업 유형 (화이트칼라/블루칼라/비경제활동) [일반 분류, 보조, 군인 포함]
 5. is_employee: 임금근로자 여부 (0/1) [EDA 07 기반]
-6. is_married: 배우자 있음 여부 (0/1)
-7. marital_stability: 혼인 안정성 (안정/미혼/불안정)
+6. marital_stability: 혼인 안정성 (안정/미혼/불안정, 무응답 포함) [is_married보다 디테일]
 
 변수 설명:
 - sob_01z1: 교육수준 (1~8: 무학~대학원)
@@ -175,7 +174,7 @@ def feature_occupation_type(df_merge: pd.DataFrame) -> pd.DataFrame:
     -------------
     occupation_type (str):
         - '화이트칼라': 관리자, 전문가, 사무직
-        - '블루칼라': 서비스, 판매, 농림어업, 기능원, 장치조작, 단순노무
+        - '블루칼라': 서비스, 판매, 농림어업, 기능원, 장치조작, 단순노무, 군인, 기타
         - '비경제활동': 미취업자
     
     원본 변수:
@@ -183,19 +182,21 @@ def feature_occupation_type(df_merge: pd.DataFrame) -> pd.DataFrame:
     soa_06z2: 직업분류 (1~10)
         1: 농림어업, 2: 전문가, 3: 관리자, 4: 단순노무, 5: 사무
         6: 기계조작, 7: 판매, 8: 서비스, 9: 기능원, 10: 군인
+        88: 비경제활동
     
     분류 근거:
     ----------
     - 화이트칼라: 주로 사무 환경, 정신 노동 중심
-    - 블루칼라: 주로 육체 노동, 서비스 노동 중심
+    - 블루칼라: 주로 육체 노동, 서비스 노동 중심 (군인, 무응답 포함)
     - 비경제활동: 직업 없음
     """
     conditions = [
-        df_merge['soa_06z2'].isin([2, 3, 5]),              # 전문가, 관리자, 사무직
-        df_merge['soa_06z2'].isin([1, 4, 6, 7, 8, 9, 10]) # 나머지 (블루칼라)
+        df_merge['soa_06z2'].isin([2, 3, 5]),    # 전문가, 관리자, 사무직
+        df_merge['soa_06z2'] == 88                # 비경제활동
     ]
-    choices = ['화이트칼라', '블루칼라']
-    df_merge['occupation_type'] = np.select(conditions, choices, default='비경제활동')
+    choices = ['화이트칼라', '비경제활동']
+    # 나머지는 모두 블루칼라 (군인, 무응답 포함)
+    df_merge['occupation_type'] = np.select(conditions, choices, default='블루칼라')
     
     return df_merge
 
@@ -242,46 +243,7 @@ def feature_is_employee(df_merge: pd.DataFrame) -> pd.DataFrame:
 
 
 # ==================================================
-# 6. 배우자 유무
-# ==================================================
-def feature_is_married(df_merge: pd.DataFrame) -> pd.DataFrame:
-    """
-    배우자 유무 이진 분류
-    
-    Parameters:
-    -----------
-    df_merge : DataFrame
-        전처리된 데이터프레임
-    
-    Returns:
-    --------
-    df_merge : DataFrame
-        'is_married' 컬럼이 추가된 데이터프레임
-    
-    생성 Feature:
-    -------------
-    is_married (int):
-        - 1: 배우자 있음 (유배우)
-        - 0: 배우자 없음
-    
-    원본 변수:
-    ----------
-    sod_02z3: 혼인상태
-        1: 유배우, 2: 미혼, 3: 사별, 4: 이혼, 5: 별거
-    
-    분석 목적:
-    ----------
-    - 배우자의 사회적 지지가 금연 성공에 미치는 영향 분석
-    """
-    df_merge['is_married'] = np.where(
-        df_merge['sod_02z3'] == 1, 1, 0
-    )
-    
-    return df_merge
-
-
-# ==================================================
-# 7. 혼인 안정성
+# 6. 혼인 안정성
 # ==================================================
 def feature_marital_stability(df_merge: pd.DataFrame) -> pd.DataFrame:
     """
@@ -302,26 +264,26 @@ def feature_marital_stability(df_merge: pd.DataFrame) -> pd.DataFrame:
     marital_stability (str):
         - '안정': 유배우 (배우자와 함께 생활)
         - '미혼': 미혼 (결혼 경험 없음)
-        - '불안정': 사별, 이혼, 별거 (배우자와 분리)
+        - '불안정': 사별, 이혼, 별거, 기타(무응답) (배우자와 분리)
     
     원본 변수:
     ----------
     sod_02z3: 혼인상태
-        1: 유배우, 2: 미혼, 3: 사별, 4: 이혼, 5: 별거
+        1: 유배우, 2: 미혼, 3: 사별, 4: 이혼, 5: 별거, 7/9: 무응답
     
     분류 근거:
     ----------
     - 안정: 배우자의 사회적 지지 가능
     - 미혼: 배우자 없음, 다른 사회적 네트워크 의존
-    - 불안정: 배우자와의 분리로 인한 스트레스 가능성
+    - 불안정: 배우자와의 분리로 인한 스트레스 가능성 (무응답 포함)
     """
     conditions = [
         df_merge['sod_02z3'] == 1,                # 유배우
-        df_merge['sod_02z3'] == 2,                # 미혼
-        df_merge['sod_02z3'].isin([3, 4, 5])     # 사별, 이혼, 별거
+        df_merge['sod_02z3'] == 2                 # 미혼
     ]
-    choices = ['안정', '미혼', '불안정']
-    df_merge['marital_stability'] = np.select(conditions, choices, default=np.nan)
+    choices = ['안정', '미혼']
+    # 나머지는 모두 '불안정'으로 (사별, 이혼, 별거, 무응답 포함)
+    df_merge['marital_stability'] = np.select(conditions, choices, default='불안정')
     
     return df_merge
 
@@ -353,7 +315,6 @@ def create_vfxpedia_features(df_merge: pd.DataFrame, verbose: bool = True) -> Tu
     df_merge = feature_job_risk_group(df_merge)
     df_merge = feature_occupation_type(df_merge)
     df_merge = feature_is_employee(df_merge)
-    df_merge = feature_is_married(df_merge)
     df_merge = feature_marital_stability(df_merge)
     
     # 통계 정보 수집
@@ -378,10 +339,6 @@ def create_vfxpedia_features(df_merge: pd.DataFrame, verbose: bool = True) -> Tu
             'count': df_merge['is_employee'].notna().sum(),
             'distribution': df_merge['is_employee'].value_counts().to_dict()
         },
-        'is_married': {
-            'count': df_merge['is_married'].notna().sum(),
-            'distribution': df_merge['is_married'].value_counts().to_dict()
-        },
         'marital_stability': {
             'count': df_merge['marital_stability'].notna().sum(),
             'distribution': df_merge['marital_stability'].value_counts().to_dict()
@@ -392,7 +349,7 @@ def create_vfxpedia_features(df_merge: pd.DataFrame, verbose: bool = True) -> Tu
         print("=" * 60)
         print("✅ vfxpedia Feature 생성 완료!")
         print("=" * 60)
-        print(f"총 7개 Feature 생성:")
+        print(f"총 6개 Feature 생성:")
         for feature_name, feature_stats in stats.items():
             print(f"  - {feature_name}: {feature_stats['count']:,}개")
         print("=" * 60)
@@ -411,14 +368,13 @@ if __name__ == "__main__":
 
 📌 담당자: 오흥재 (vfxpedia)
 
-📊 생성 Feature (7개):
+📊 생성 Feature (6개):
   1. education_group          : 교육수준 (0:저/1:중/2:고) [EDA 06]
   2. is_economically_active   : 경제활동 (0/1) [EDA 07]
   3. job_risk_group           : 직업 위험도 (0:저/1:중/2:고/-1:해당없음) [EDA 07]
   4. occupation_type          : 직업 유형 (화이트칼라/블루칼라/비경제활동) [보조]
   5. is_employee              : 임금근로자 (0/1) [EDA 07]
-  6. is_married               : 배우자 있음 (0/1)
-  7. marital_stability        : 혼인 안정성 (안정/미혼/불안정)
+  6. marital_stability        : 혼인 안정성 (안정/미혼/불안정)
 
 💻 사용법:
   # 방법 1: 통합 함수로 한번에 생성
