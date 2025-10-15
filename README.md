@@ -28,15 +28,15 @@
 
 <div align="center">
 
-### **이조는 차분하조**
+### **상민 크로스 해적단**
  
 | 김소희 | 마한성 | 박도연 | 오흥재 | 임상민 |
 | :---: | :---: | :---: | :---: | :---: |
-| <img src="docs/img/readme/team1.png" width="120"/> | <img src="docs/img/readme/team2.png" width="120"/> | <img src="docs/img/readme/team3.png" width="120"/> | <img src="docs/img/readme/team4.png" width="120"/> | <img src="docs/img/readme/team5.png" width="120"/> |
+| <img src="docs/img/readme/team5.png" width="120"/> | <img src="docs/img/readme/team2.png" width="120"/> | <img src="docs/img/readme/team3.png" width="120"/> | <img src="docs/img/readme/team4.png" width="120"/> | <img src="docs/img/readme/team1.png" width="120"/> |
 | [![GitHub](https://img.shields.io/badge/GitHub-sosodoit-181717?style=flat&logo=github&logoColor=white)](https://github.com/sosodoit) | [![GitHub](https://img.shields.io/badge/GitHub-gitsgetit-181717?style=flat&logo=github&logoColor=white)](https://github.com/gitsgetit) | [![GitHub](https://img.shields.io/badge/GitHub-doyeon-181717?style=flat&logo=github&logoColor=white)](https://github.com/doyeon) | [![GitHub](https://img.shields.io/badge/GitHub-vfxpedia-181717?style=flat&logo=github&logoColor=white)](https://github.com/vfxpedia) | [![GitHub](https://img.shields.io/badge/GitHub-sangmin-181717?style=flat&logo=github&logoColor=white)](https://github.com/sangmin) |
 | **가구/소득 분석** | **정신건강 분석** | **음주/신체활동 분석** | **교육/경제활동 분석** | **식생활/비만 분석** |
 
-**프로젝트 기간**: 2024.09.30 ~ 2024.10.15 (16일)
+**프로젝트 기간**: 2025.10.14 ~ 2024.10.15 (2일)
 
 </div>
 
