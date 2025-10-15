@@ -366,6 +366,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 |---|---|---|
 | **데이터 분석** | [데이터전처리결과서.md](docs/summary/eda/데이터전처리결과서.md) | EDA, 전처리, 가설 검증, 파생변수 |
 | **모델 분석** | [인공지능학습결과서.md](docs/summary/model/인공지능학습결과서.md) | 모델 비교, 성능 평가, 선정 사유 |
+| **최종 모델델** | [인공지능학습결과서.md](notebooks/team/results/model_train_result.pkl) | CatBoost |
 
 ### 시각화 산출물
 

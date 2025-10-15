@@ -2,7 +2,11 @@
 import streamlit as st
 import pandas as pd
 
-from utils.state import init_state, NAV_INPUT, go
+# ❌ 기존 코드: go 함수와 plotly.graph_objects의 이름 충돌 발생
+# from utils.state import init_state, NAV_INPUT, go
+
+# ✅ 수정된 코드: go 함수를 import하지 않고 state 초기화만 사용
+from utils.state import init_state
 from utils.pdf_utils import build_pdf_bytes
 from utils.model_loader import predict_proba_from_features
 from data.defaults import success_avg
@@ -25,7 +29,13 @@ MUTED = "#64748B"
 # =========================
 if not st.session_state.get("patient") or not st.session_state.get("features_enc"):
     st.warning("먼저 '환자 정보 입력' 페이지에서 정보를 저장하세요.")
-    st.button("환자 정보 입력으로 이동", on_click=go, args=(NAV_INPUT,))
+    
+    # ❌ 기존 코드: go 함수 사용 (이름 충돌로 인해 오류 발생)
+    # st.button("환자 정보 입력으로 이동", on_click=go, args=(NAV_INPUT,))
+    
+    # ✅ 수정된 코드: 버튼 클릭 시 직접 페이지 전환
+    if st.button("환자 정보 입력으로 이동"):
+        st.switch_page("pages/01_고객_정보_입력.py")
     st.stop()
 
 patient = st.session_state["patient"]
@@ -116,6 +126,9 @@ try:
         success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
 except Exception:
     success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
+
+# ✅ 새로 추가: PDF 생성을 위해 예측 확률을 세션에 저장
+st.session_state["_prediction_probability"] = success_probability
 
 # =========================
 # 성공자 평균 참조치 (없으면 기본값)
