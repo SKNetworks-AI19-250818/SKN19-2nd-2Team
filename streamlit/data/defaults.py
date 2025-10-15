@@ -1,6 +1,8 @@
 import pandas as pd
+from pathlib import Path
+data_dir = Path(__file__).resolve().parent
 
-data_path = r'C:\Users\Playdata\Desktop\SKN19-2nd-2Team\notebooks\team\results\model_pred_result_analysis.csv'
+data_path = data_dir / "results/model_pred_result_analysis.csv"
 df = pd.read_csv(data_path)
 print(df.columns)
 
