@@ -39,18 +39,23 @@ bmi = patient.get("BMI", None)
 features_raw = st.session_state.get("features_raw", {})  # 시각화/설명용
 features_enc = st.session_state["features_enc"]          # 모델 입력용 (인코딩된 값)
 
+
+
 # =========================
 # 헤더 (토스풍 심플)
 # =========================
-c1, c2 = st.columns([3, 1])
-with c1:
-    st.subheader(f"환자: {name} (만 {age}세) | 방문일: {visit_date}")
-with c2:
-    sel = st.selectbox("다른 환자 보기(데모)", ["(선택 안 함)"] + list(patient_data_all.keys()))
-    if st.button("열기") and sel != "(선택 안 함)":
-        demo = patient_data_all[sel]
-        st.session_state["patient"] = {"이름": sel, "날짜": visit_date, **demo}
-        st.experimental_rerun()
+st.subheader(f"환자: {name} (만 {age}세) | 방문일: {visit_date}")
+
+
+# c1, c2 = st.columns([3, 1])
+# with c1:
+#     st.subheader(f"환자: {name} (만 {age}세) | 방문일: {visit_date}")
+# with c2:
+#     sel = st.selectbox("다른 환자 보기(데모)", ["(선택 안 함)"] + list(patient_data_all.keys()))
+#     if st.button("열기") and sel != "(선택 안 함)":
+#         demo = patient_data_all[sel]
+#         st.session_state["patient"] = {"이름": sel, "날짜": visit_date, **demo}
+#         st.experimental_rerun()
 
 # BMI 카드 느낌 (상단 네모칸)
 st.markdown(
@@ -72,58 +77,45 @@ st.markdown("---")
 # 예측 확률 계산
 #  - 실제 모델 연결. 실패 시 더미 점수로 폴백
 # =========================
+# =========================
+# 예측 확률 계산
+#  - 실제 모델 연결. 실패 시 더미 점수로 폴백
+# =========================
 USE_MODEL = True
 
 def build_model_features(enc: dict) -> dict:
-    """
-    학습 모델 입력용 피처만 추출.
-    enc는 01_환자_정보_입력.py에서 저장한 features_enc 구조를 사용.
-    필요한 컬럼명이 더 있다면 여기서 추가/매핑.
-    """
     keys = [
-        "sex",
-        "marital_stability",
-        "breakfast_freq",
-        "weight_control_method",
-        "toilet_awake",
-        "ever_drink",
-        "year_drink_freq",
-        "drink_per_occasion",
-        "home_smoker",
-        "dementia_test",
-        "occupation_type",
-        "sleep_time_hour",
-        "flex_ex_week",
-        "oral_health_self",
-        "exercise_per_week",
-        "breakfast_yes",
-        "alcohol_weekly",
-        # 필요 시 stress_score 등의 추가 가능 (모델에 있으면)
-        "stress_score",
+        "sex", "marital_stability", "breakfast_freq", "weight_control_method",
+        "toilet_awake", "ever_drink", "year_drink_freq", "drink_per_occasion",
+        "home_smoker", "dementia_test", "occupation_type", "sleep_time_hour",
+        "flex_ex_week", "oral_health_self", "exercise_per_week",
+        "breakfast_yes", "alcohol_weekly", "stress_score",
     ]
-    out = {}
-    for k in keys:
-        if k in enc:
-            out[k] = enc[k]
+    out = {k: enc[k] for k in keys if k in enc}
     return out
 
 def dummy_score_for_fallback(raw: dict, enc: dict) -> float:
-    """
-    모델 파일이 없거나 로딩 실패할 때 사용할 간단한 더미 점수.
-    출력: 0.0 ~ 1.0 범위
-    """
     ex = enc.get("exercise_per_week", 0)       # 0~7
     bf_yes = enc.get("breakfast_yes", 0)       # 0/1
     drink = enc.get("drink_per_occasion", 0)   # 0~15+
     stress = enc.get("stress_score", 3)        # 1~5
-
-    s = (
-        (ex / 7) * 0.35 +
-        bf_yes * 0.20 +
-        (max(0, 6 - drink) / 6) * 0.25 +
-        ((6 - stress) / 5) * 0.20
-    )
+    s = ((ex / 7) * 0.35 +
+         bf_yes * 0.20 +
+         (max(0, 6 - drink) / 6) * 0.25 +
+         ((6 - stress) / 5) * 0.20)
     return max(0.0, min(1.0, s))
+
+# ✅ 여기가 try/except 위치입니다
+try:
+    model_features = build_model_features(features_enc)
+    if USE_MODEL:
+        success_probability = predict_proba_from_features(model_features) * 100.0
+    else:
+        success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
+except Exception as e:
+    # st.info(f"모델 예측에 실패하여 임시 점수로 대체합니다. ({e})")
+    success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
+
 
 # try:
 #     # 기존 build_model_features(features_enc)는 삭제
@@ -149,16 +141,16 @@ def dummy_score_for_fallback(raw: dict, enc: dict) -> float:
 #     st.info(f"모델 예측에 실패하여 임시 점수로 대체합니다. ({e})")
 #     success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
 
-try:
-    model_features = build_model_features(features_enc)
-    if USE_MODEL:
-        success_probability = predict_proba_from_features(model_features) * 100.0
-    else:
-        success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
-except Exception:
-    # 콘솔 로그만 남기고 UI에는 표시하지 않음
-    # import traceback; print("[predict fallback]\n", traceback.format_exc())
-    success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
+# try: 3:24
+#     model_features = build_model_features(features_enc)
+#     if USE_MODEL:
+#         success_probability = predict_proba_from_features(model_features) * 100.0
+#     else:
+#         success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
+# except Exception:
+#     # 콘솔 로그만 남기고 UI에는 표시하지 않음
+#     # import traceback; print("[predict fallback]\n", traceback.format_exc())
+#     success_probability = dummy_score_for_fallback(features_raw, features_enc) * 100.0
 
 
 # =========================
