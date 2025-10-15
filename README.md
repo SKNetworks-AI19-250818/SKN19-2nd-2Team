@@ -496,8 +496,8 @@ jupyter notebook
 ### WBS (Work Breakdown Structure)
 
 <div align="center">
-<img width="1778" height="706" alt="image" src="https://github.com/user-attachments/assets/05f4eb34-b28a-4b60-9efd-4503a051b234" />
-"/>
+<img width="1787" height="716" alt="image" src="https://github.com/user-attachments/assets/6ff9c94d-badf-4649-9704-c9c65c5a8490" />
+
 </div>
 
 **주요 마일스톤**:
