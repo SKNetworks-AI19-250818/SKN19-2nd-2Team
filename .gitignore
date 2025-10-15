@@ -211,4 +211,4 @@ __marimo__/
 
 
 # Local files (개인 로컬 파일)
-_local/
+_local/streamlit/data/results/

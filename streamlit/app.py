@@ -13,8 +13,8 @@ if st.query_params.get("goto") == "input":
     except Exception:
         pass
 
-st.title("금연 클리닉 상담 지원")
-st.caption("사이드바에서 페이지를 선택하세요. 기본 순서: 환자 정보 입력 → 상담자 전용")
+# st.title("금연 클리닉 상담 지원")
+# st.caption("사이드바에서 페이지를 선택하세요. 기본 순서: 환자 정보 입력 → 상담자 전용")
 
 # ===== 스크롤 히어로 섹션 =====
 def render_scroll_hero():

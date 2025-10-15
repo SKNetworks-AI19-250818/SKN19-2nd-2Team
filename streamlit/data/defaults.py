@@ -1,5 +1,9 @@
 import pandas as pd
 
+data_path = r'C:\Users\Playdata\Desktop\SKN19-2nd-2Team\notebooks\team\results\model_pred_result_analysis.csv'
+df = pd.read_csv(data_path)
+print(df.columns)
+
 # 금연 성공자 평균
 success_avg = pd.DataFrame({
     '특성': ['수면시간', '아침식사', '운동빈도', '스트레스'],
