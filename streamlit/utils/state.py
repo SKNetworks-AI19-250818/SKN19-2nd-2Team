@@ -27,5 +27,8 @@ def init_state():
     for k, v in DEFAULTS.items():
         st.session_state.setdefault(k, v)
 
-def go(to: str):
-    st.session_state["nav"] = to
+# def go(to: str):
+#     st.session_state["nav"] = to
+def go(page_key: str):
+    st.session_state["nav"] = page_key
+    st.experimental_rerun()
