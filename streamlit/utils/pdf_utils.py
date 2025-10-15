@@ -1,41 +1,121 @@
-import os
+# utils/pdf_utils.py
+from pathlib import Path
 from fpdf import FPDF
 
-# 우선순위: 로컬 TTF(동일 디렉토리) → Windows 맑은고딕 → 기본 헬베티카(영문만)
-LOCAL_FONT = os.path.join(os.path.dirname(__file__), "NotoSansKR-Regular.ttf")
-WIN_FONT = r"C:\\Windows\\Fonts\\malgun.ttf"
+_FONT_CANDIDATES = [
+    Path(__file__).resolve().parents[1] / "assets" / "fonts" / "NotoSansKR-Regular.ttf",
+    Path.cwd() / "streamlit" / "assets" / "fonts" / "NotoSansKR-Regular.ttf",
+    Path.cwd() / "assets" / "fonts" / "NotoSansKR-Regular.ttf",
+    Path(__file__).resolve().parents[2] / "streamlit" / "assets" / "fonts" / "NotoSansKR-Regular.ttf",
+]
+
+def _pick_font_path():
+    for p in _FONT_CANDIDATES:
+        if p.exists():
+            return p
+    return None
+
+def _latin1(s) -> str:
+    """한글 등 비지원 문자를 대체문자로 바꾸어 라틴-1 폰트로도 출력 가능하게."""
+    return str(s).encode("latin-1", "replace").decode("latin-1")
 
 def build_pdf_bytes(name: str, comments: list[str]) -> bytes:
     pdf = FPDF()
     pdf.add_page()
-    # 폰트 등록 (유니코드 지원)
-    if os.path.exists(LOCAL_FONT):
-        pdf.add_font("Noto", "", LOCAL_FONT, uni=True)
-        pdf.set_font("Noto", size=14)
-        current_font = "unicode"
-    elif os.path.exists(WIN_FONT):
-        pdf.add_font("Malgun", "", WIN_FONT, uni=True)
-        pdf.set_font("Malgun", size=14)
-        current_font = "unicode"
-    else:
-        pdf.set_font("Helvetica", size=14)
-        current_font = "latin"
 
-    pdf.cell(0, 10, txt=f"금연 상담 리포트 - {name}", ln=True)
-    pdf.ln(5)
+    font_path = _pick_font_path()
+    if font_path is not None:
+        # ✅ 유니코드 폰트를 찾은 경우: 정상 한글 출력
+        pdf.add_font("NotoSansKR", "", str(font_path), uni=True)
+        pdf.set_font("NotoSansKR", size=14)
+        pdf.cell(0, 10, txt=f"{name} 금연 상담 리포트", ln=True, align="C")
+        pdf.ln(4)
+        pdf.set_font("NotoSansKR", size=12)
+        for line in comments:
+            pdf.multi_cell(0, 8, txt=str(line))
+        return pdf.output(dest="S").encode("latin-1", "replace")
 
-    if comments:
-        for c in comments:
-            # 텍스트 길이 제한 및 안전한 처리
-            safe_text = str(c)[:200] if len(str(c)) > 200 else str(c)
-            pdf.multi_cell(0, 8, txt=safe_text)
-    else:
-        pdf.multi_cell(0, 8, txt="모든 항목이 평균 이상입니다!")
+    # ❗ 폰트를 못 찾은 경우: 라틴-1 대체 방식(앱이 죽지 않게)
+    pdf.set_font("helvetica", size=14)  # 'arial'은 helvetica 별칭
+    title = _latin1(f"{name} 금연 상담 리포트 (폰트 미탑재)")
+    pdf.cell(0, 10, txt=title, ln=True, align="C")
+    pdf.ln(4)
+    pdf.set_font("helvetica", size=12)
+    for line in comments:
+        pdf.multi_cell(0, 8, txt=_latin1(line))
+    return bytes(pdf.output(dest="S"))
 
-    # fpdf2는 dest='S'로 bytes/bytearray/str를 반환할 수 있음 → 항상 bytes로 변환
-    out = pdf.output(dest="S")
-    if isinstance(out, (bytes, bytearray)):
-        return bytes(out)
-    # 일부 구버전에서 str을 반환하는 경우 대비
-    encoding = "utf-8" if current_font == "unicode" else "latin1"
-    return out.encode(encoding, "ignore")
+
+
+
+# # utils/pdf_utils.py
+# from pathlib import Path
+# from fpdf import FPDF
+
+# # 폰트 경로 (프로젝트 구조에 맞춰 조정)
+# FONT_PATH = Path(__file__).resolve().parents[1] / "assets" / "fonts" / "NotoSansKR-Regular.ttf"
+
+# def _strip_emoji(s: str) -> str:
+#     # 이모지는 PDF 폰트가 없으면 문제라 제거 권장 (원하면 pass로 바꿔도 됨)
+#     try:
+#         import re
+#         emoji_pattern = re.compile(
+#             "["
+#             "\U0001F600-\U0001F64F"  # emoticons
+#             "\U0001F300-\U0001F5FF"  # symbols & pictographs
+#             "\U0001F680-\U0001F6FF"  # transport & map symbols
+#             "\U0001F1E0-\U0001F1FF"  # flags
+#             "\U00002700-\U000027BF"  # dingbats
+#             "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+#             "\U00002600-\U000026FF"  # Misc symbols
+#             "]+",
+#             flags=re.UNICODE,
+#         )
+#         return emoji_pattern.sub("", s)
+#     except Exception:
+#         return s  # 문제가 생기면 그냥 원문 반환
+
+# def build_pdf_bytes(name: str, comments: list[str]) -> bytes:
+#     pdf = FPDF()
+#     pdf.set_auto_page_break(auto=True, margin=15)
+#     pdf.add_page()
+
+#     # ✅ 유니코드 폰트 등록 + 설정
+#     if not FONT_PATH.exists():
+#         raise FileNotFoundError(f"한글 폰트 파일을 찾을 수 없습니다: {FONT_PATH}")
+
+#     pdf.add_font("NotoKR", "", str(FONT_PATH), uni=True)
+#     pdf.set_font("NotoKR", size=16)
+
+#     # 타이틀
+#     title = f"금연 상담 리포트 - {name}"
+#     pdf.cell(0, 10, txt=_strip_emoji(title), ln=True)
+
+#     pdf.ln(5)
+#     pdf.set_font("NotoKR", size=12)
+
+#     if comments:
+#         for c in comments:
+#             pdf.multi_cell(0, 8, txt=_strip_emoji(c))
+#     else:
+#         pdf.multi_cell(0, 8, txt="모든 항목이 평균 이상입니다.")
+
+#     # ✅ fpdf2 권장 방식: 문자열 반환 후 latin-1 인코딩
+#     # (내부는 바이너리 스트림이지만 fpdf2는 str을 리턴하므로 latin-1로 안전 인코딩)
+#     return pdf.output(dest="S").encode("latin-1")
+
+
+# def build_pdf_bytes(name, comments):
+#     pdf = FPDF()
+#     pdf.add_page()
+
+#     # ✅ 폰트 등록
+#     pdf.add_font("NotoSansKR", "", str(FONT_PATH), uni=True)
+#     pdf.set_font("NotoSansKR", size=14)
+
+#     pdf.cell(200, 10, txt=f"{name} 금연 상담 리포트", ln=True, align="C")
+
+#     for line in comments:
+#         pdf.multi_cell(0, 10, txt=line)
+
+#     return pdf.output(dest="S").encode("latin1", "replace")
