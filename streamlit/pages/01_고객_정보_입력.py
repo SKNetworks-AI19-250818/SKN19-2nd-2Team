@@ -288,12 +288,21 @@ def try_login():
     st.session_state["features_enc"] = features_enc
     st.session_state["_login_error"] = ""
 
-    st.switch_page("pages/02_상담자_전용.py")
+    # ❌ 기존 코드: callback 내에서 st.switch_page() 호출 시 작동 안 함
+    # st.switch_page("pages/02_상담자_전용.py")
+    
+    # ✅ 수정된 코드: callback에서는 flag만 설정, 페이지 전환은 밖에서 처리
+    st.session_state["_should_switch_page"] = True
 
 st.button("상담자 전용 화면으로 이동", on_click=try_login)
 
 if st.session_state.get("_login_error"):
     st.error(st.session_state["_login_error"])
+
+# ✅ 새로 추가된 코드: callback 밖에서 페이지 전환 처리
+if st.session_state.get("_should_switch_page"):
+    st.session_state["_should_switch_page"] = False  # flag 초기화
+    st.switch_page("pages/02_상담자_전용.py")
 
 
 # # pages/01_환자_정보_입력.py
