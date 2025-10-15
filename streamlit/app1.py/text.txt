@@ -1,0 +1,22 @@
+import streamlit as st
+from utils.state import init_state, NAV_HOME, NAV_INPUT, NAV_COUNSELOR
+
+st.set_page_config(page_title="🚭 금연 클리닉 상담 지원", page_icon="🚭", layout="wide")
+init_state()
+
+st.title("🚭 금연 클리닉 상담 지원 시스템")
+st.caption("홈 → 고객 정보 입력 → 상담자 전용 순서로 진행하세요.")
+
+st.sidebar.header("메뉴")
+# 멀티페이지 모드에서는 pages/ 폴더의 파일이 자동으로 상단/사이드에 뜹니다.
+# 여기서는 안내만 표시해도 충분합니다.
+st.markdown("""
+**사용 순서**
+1) 사이드바에서 **고객 정보 입력**
+2) **상담자 전용**으로 이동해 분석/리포트
+""")
+
+# 상태 간략 표시(디버그/데모용)
+with st.expander("상태 보기(디버그)"):
+    st.json({k: v for k, v in st.session_state.items()
+             if k in ["nav", "patient", "_login_error"]})
