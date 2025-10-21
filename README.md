@@ -595,6 +595,6 @@ EDA는 '빨리 예측 잘하는 모델'을 찾는 과정이 아니다. 문제를
 
 **Built with ❤️ by 이조는 차분하조**
 
-© 2024 SKN19-2nd-2Team. All rights reserved.
+© 2025 SKN19-2nd-2Team. All rights reserved.
 
 </div>
